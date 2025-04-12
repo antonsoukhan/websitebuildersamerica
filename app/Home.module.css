@@ -1,0 +1,110 @@
+/* app/reviews/Reviews.module.css */
+.containerReviews {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(6rem, 1fr)
+    [center-start] repeat(8, [col-start] minmax(min-content, 15rem) [col-end])
+    [center-end] minmax(6rem, 1fr) [full-end];
+  grid-template-rows: repeat(2, min-content);
+}
+
+.sectionReviews {
+  grid-column: center-start / center-end;
+  margin: 12rem 0;
+}
+
+.headingContainerReviews {
+  text-align: right;
+  padding-right: 3rem;
+}
+
+.subtitle {
+  color: #26baee;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0.2rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.heading2 {
+  font-size: 3rem;
+  font-weight: 400;
+  margin-bottom: 4rem;
+}
+
+.reviewBox {
+  background-color: #e0f7fd;
+  padding: 4rem 6rem;
+  border-radius: 1rem;
+  margin-bottom: 6rem;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reviewContent {
+  font-size: 1.6rem;
+  color: #043541;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.heading2Review {
+  font-size: 1.9rem;
+  color: #064f61;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.clientMeta {
+  margin-top: 2rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #064f61;
+}
+
+.btnText {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: #064f61;
+  font-size: 1.5rem;
+  text-decoration: underline;
+  transition: all 0.2s;
+}
+
+.btnText:hover {
+  color: #043541;
+}
+
+.reviewBoxBack {
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.footerBlue {
+  background-color: #e0f7fd;
+  padding: 6rem 0;
+  grid-column: full-start / full-end;
+  text-align: center;
+}
+
+.footerMain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  font-size: 1.6rem;
+}
+
+.logoPhoto {
+  height: 12rem;
+  object-fit: contain;
+}
+
+.footerCopyright {
+  font-size: 1.3rem;
+  color: #064f61;
+  margin-top: 2rem;
+}
