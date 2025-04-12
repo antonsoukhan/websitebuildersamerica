@@ -452,3 +452,60 @@ body {
   object-fit: contain; /* or use `cover` if it should fill the box */
   display: block;
 }
+/* ==== FOOTER ==== */
+/* ==== FOOTER ==== */
+.footer {
+  background-color: var(--color-primary-1-light);
+  grid-column: full-start / full-end;
+  padding: 8rem 0 4rem;
+}
+
+.footer--blue {
+  background-color: var(--color-primary-1-light);
+}
+
+.footer__main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(27rem, 1fr));
+  justify-items: center;
+  align-items: flex-start;
+  gap: 8rem;
+  margin-bottom: 4rem;
+  font-size: var(--font-default);
+}
+
+.footer__heading {
+  font-weight: bold;
+  margin-bottom: 0.8rem;
+  font-size: 1.5rem;
+}
+
+.footer__phone,
+.footer__location {
+  margin-bottom: 2rem;
+}
+
+.footer__light {
+  color: var(--color-grey-2);
+}
+
+.footer__icon:link,
+.footer__icon:visited {
+  text-decoration: none;
+  color: var(--color-primary-2);
+  display: inline-block;
+  font-size: 2.6rem;
+  transition: all 0.2s;
+  margin-right: 0.3rem;
+}
+
+.footer__icon:hover,
+.footer__icon:active {
+  color: var(--color-grey-1);
+}
+
+.footer__copyright {
+  font-size: 1.3rem;
+  text-align: center;
+  color: var(--color-grey-2);
+}
