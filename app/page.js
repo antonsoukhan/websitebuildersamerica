@@ -126,16 +126,20 @@ export default function Home() {
             {[
               { href: "https://www.dandggardening.com/", src: "j.png" },
               {
+                href: "https://www.orlandosjunkremoval.com",
+                src: "orlandosjunkremoval.png",
+              },
+              {
                 href: "https://www.professionalcarpetcleaningsacramento.com/",
                 src: "h.png",
               },
-              {
-                href: "https://san-deigo-junk-removal.vercel.app/",
-                src: "i.png",
-              },
+              // {
+              //   href: "https://san-deigo-junk-removal.vercel.app/",
+              //   src: "i.png",
+              // },
               { href: "https://lawn-services-llc.vercel.app/", src: "g.png" },
               { href: "https://www.alwaysdiamondlimo.com/", src: "d.png" },
-              { href: "https://www.jsremixedbyj.com/", src: "a.png" },
+              // { href: "https://www.jsremixedbyj.com/", src: "a.png" },
               { href: "https://www.khaosparrish.com/", src: "b.png" },
               { href: "https://www.vanityhabit.com/", src: "c.png" },
               { href: "https://calihouseinc.com/", src: "e.png" },
