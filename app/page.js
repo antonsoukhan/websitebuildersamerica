@@ -2,8 +2,33 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect } from "react";
+import CheckoutButton from "./components/CheckoutButton";
 
 export default function Home() {
+  useEffect(() => {
+    const links = document.querySelectorAll(".accordion__sidebar a");
+    const sidebar = document.querySelector(".accordion__sidebar");
+    const backdrop = document.querySelector(".accordion__backdrop");
+
+    links.forEach((link) =>
+      link.addEventListener("click", () => {
+        sidebar.classList.remove("accordion__sidebar--open");
+        backdrop.classList.remove("accordion__backdrop--visible");
+      })
+    );
+
+    // Clean up the event listeners on unmount
+    return () => {
+      links.forEach((link) =>
+        link.removeEventListener("click", () => {
+          sidebar.classList.remove("accordion__sidebar--open");
+          backdrop.classList.remove("accordion__backdrop--visible");
+        })
+      );
+    };
+  }, []);
+
   return (
     <>
       <main className="container">
@@ -24,7 +49,9 @@ export default function Home() {
               className="accordion__toggle"
               onClick={() => {
                 const menu = document.querySelector(".accordion__sidebar");
+                const backdrop = document.querySelector(".accordion__backdrop");
                 menu.classList.toggle("accordion__sidebar--open");
+                backdrop.classList.toggle("accordion__backdrop--visible");
               }}
             >
               ☰ Menu
@@ -52,6 +79,19 @@ export default function Home() {
                 </li>
               </ul>
             </nav>
+
+            {/* ⬇️ Place this after the closing </nav> */}
+            <div
+              className="accordion__backdrop"
+              onClick={() => {
+                document
+                  .querySelector(".accordion__sidebar")
+                  .classList.remove("accordion__sidebar--open");
+                document
+                  .querySelector(".accordion__backdrop")
+                  .classList.remove("accordion__backdrop--visible");
+              }}
+            ></div>
           </div>
 
           <div className="header__text-box u-center-text">
@@ -143,7 +183,7 @@ export default function Home() {
                 Secure
               </h3>
               <p className="feature-box__text">
-                <b>No deposits, no hidden fees</b>. You don't get charged
+                <b>No deposits, no hidden fees</b>. You do not get charged
                 anything until you receive your website!
               </p>
             </div>
@@ -347,6 +387,7 @@ export default function Home() {
                 <i className="ph-heart-fill"></i>
                 <b>NO MONTHLY FEES!</b>
               </p>
+              <CheckoutButton amount={49900} label="Buy Now for $499" />
             </div>
           </div>
 
@@ -379,10 +420,11 @@ export default function Home() {
               <br />
               <br />
               We do our best to help and guide you through to the best result
-              possible &ndash; your perfect website you'll be truly happy with.
+              possible &ndash; your perfect website you will be truly happy
+              with.
               <br />
               <br />
-              Let's take your business to the next level with your beautiful
+              Let us take your business to the next level with your beautiful
               website!
             </p>
           </div>

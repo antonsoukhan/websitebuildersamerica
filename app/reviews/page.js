@@ -7,10 +7,10 @@ const reviews = [
   {
     stars: 5,
     headline:
-      "Mana doesn't just build you a website – she's building your brand!",
+      "Mana does not just build you a website – she is building your brand!",
     text: `Wow, Heaven Sent! She must have wings! Mana did an amazing job on my website!
-        She's extremely knowledgeable and professional! She's incredibly fast and delivers quality work!
-        Mana is gifted at what she does. She doesn't just build you a website – she's building your brand!
+        She is extremely knowledgeable and professional! She is incredibly fast and delivers quality work!
+        Mana is gifted at what she does. She does not just build you a website – she is building your brand!
         Phenomenal job Mana and everybody loves my website! Thank You!`,
     name: "Mistee B.",
     company: "Owner of VanityHabit",

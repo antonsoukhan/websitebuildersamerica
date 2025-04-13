@@ -914,3 +914,37 @@ html {
 .accordion__sidebar--open {
   right: 0;
 }
+.accordion__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 1400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.accordion__backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.accordion {
+  position: fixed; /* ✅ WAS: absolute */
+  top: 2rem;
+  right: 2rem;
+  z-index: 2000;
+}
+.accordion__toggle {
+  background-color: var(--color-primary-2);
+  color: white;
+  font-size: 1.6rem;
+  padding: 1.2rem 2.4rem;
+  border: none;
+  border-radius: 10rem;
+  cursor: pointer;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* 💄 Soft shadow */
+  transition: background-color 0.2s;
+}
