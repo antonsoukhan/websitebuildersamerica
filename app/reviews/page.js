@@ -1,3 +1,4 @@
+import Link from "next/link";
 export const metadata = {
   title: "Client Reviews | Website Builders America",
   description: "Read what our happy clients have to say about working with us.",
@@ -118,9 +119,9 @@ export default function ReviewsPage() {
           ))}
 
           <div className="review-box__backtohomepage u-center-text">
-            <a href="/" className="btn-text">
+            <Link href="/" className="btn-text">
               ← Back to Homepage
-            </a>
+            </Link>
           </div>
         </main>
       </div>
@@ -128,13 +129,13 @@ export default function ReviewsPage() {
       <footer className="footer footer--blue">
         <div className="footer__main">
           <div className="logo logo--footer">
-            <a href="/" className="logo__link">
+            <Link href="/" className="logo__link">
               <img
                 src="/img/favicontransparent.png"
                 alt="Website Builders America logo"
                 className="logo__photo"
               />
-            </a>
+            </Link>
           </div>
 
           <div className="footer__contact">

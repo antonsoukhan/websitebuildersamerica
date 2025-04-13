@@ -1,6 +1,6 @@
 // app/page.js
 "use client";
-
+import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import CheckoutButton from "./components/CheckoutButton";
@@ -34,7 +34,7 @@ export default function Home() {
       <main className="container">
         <header className="header">
           <div className="logo logo--header">
-            <a href="/" className="logo__link">
+            <Link href="/" className="logo__link">
               <Image
                 src="/img/favicontransparent.png"
                 alt="Website Builders America logo"
@@ -42,7 +42,7 @@ export default function Home() {
                 height={140}
                 className="logo__photo"
               />
-            </a>
+            </Link>
           </div>
           <div className="accordion">
             <button
@@ -433,13 +433,13 @@ export default function Home() {
       <footer className="footer">
         <div className="footer__main">
           <div className="logo logo--footer">
-            <a href="/" className="logo__link">
+            <Link href="/" className="logo__link">
               <img
                 src="/img/favicontransparent.png"
                 alt="Website Builders America logo"
                 className="logo__photo"
               />
-            </a>
+            </Link>
           </div>
 
           <div className="footer__contact">
