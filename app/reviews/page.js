@@ -3,7 +3,7 @@ export const metadata = {
   title: "Client Reviews | Website Builders America",
   description: "Read what our happy clients have to say about working with us.",
 };
-
+// made changes
 const reviews = [
   {
     stars: 5,
