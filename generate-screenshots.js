@@ -1,43 +1,40 @@
-// Old
-// import puppeteer from "puppeteer";
-// import fs from "fs";
-// import path from "path";
-
-// ✅ New (CommonJS syntax)
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
 const websites = [
+  { url: "https://www.dandggardening.com/", filename: "j.png" },
   {
     url: "https://www.orlandosjunkremoval.com",
     filename: "orlandosjunkremoval.png",
   },
-  // Add more as needed
+  {
+    url: "https://www.professionalcarpetcleaningsacramento.com/",
+    filename: "h.png",
+  },
+  { url: "https://lawn-services-llc.vercel.app/", filename: "g.png" },
+  { url: "https://www.alwaysdiamondlimo.com/", filename: "d.png" },
+  { url: "https://www.khaosparrish.com/", filename: "b.png" },
+  { url: "https://www.vanityhabit.com/", filename: "c.png" },
+  { url: "https://calihouseinc.com/", filename: "e.png" },
+  { url: "https://www.ourmusicevents.com/", filename: "f.png" },
 ];
-
-const outputDir = path.resolve("public/img");
 
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  // Set your desired viewport size (simulates desktop screen)
-  await page.setViewport({ width: 1280, height: 800 });
-
   for (const site of websites) {
     console.log(`Capturing ${site.url}...`);
-
-    await page.goto(site.url, { waitUntil: "networkidle2", timeout: 0 });
-
-    const imagePath = path.join(outputDir, site.filename);
-
-    await page.screenshot({
-      path: imagePath,
-      fullPage: false, // ← This makes it capture only the viewport, not the full page
-    });
-
-    console.log(`Saved screenshot to ${imagePath}`);
+    try {
+      await page.goto(site.url, { waitUntil: "networkidle2", timeout: 60000 });
+      await page.setViewport({ width: 1200, height: 800 });
+      const filePath = path.join(__dirname, "public", "img", site.filename);
+      await page.screenshot({ path: filePath, fullPage: false });
+      console.log(`Saved: ${site.filename}`);
+    } catch (err) {
+      console.error(`❌ Failed to capture ${site.url}: ${err.message}`);
+    }
   }
 
   await browser.close();
