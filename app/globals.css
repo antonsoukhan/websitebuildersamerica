@@ -957,3 +957,52 @@ html {
       [full-end];
   }
 }
+@media only screen and (max-width: 37.5em) {
+  .container {
+    display: block;
+    padding: 0 2rem;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .container {
+    display: block;
+    padding: 0 2rem;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .header__text-box {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    text-align: center;
+    padding: 6rem 2rem;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .header {
+    padding: 4rem 0;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .logo__photo {
+    height: 7rem; /* reduce logo height by half */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .container {
+    display: block; /* 🔄 disables grid */
+    width: 100%;
+    padding: 0;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .footer__main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4rem;
+  }
+}
