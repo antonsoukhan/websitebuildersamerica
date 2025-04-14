@@ -948,3 +948,12 @@ html {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* 💄 Soft shadow */
   transition: background-color 0.2s;
 }
+@media only screen and (max-width: 37.5em) {
+  .container {
+    grid-template-columns:
+      [full-start] 1rem
+      [center-start] repeat(8, [col-start] 1fr [col-end])
+      [center-end] 1rem
+      [full-end];
+  }
+}
