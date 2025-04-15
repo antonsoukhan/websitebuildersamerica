@@ -1007,7 +1007,6 @@ html {
   }
 }
 .call-now-btn {
-  position: fixed;
   bottom: 2rem;
   right: 2rem;
   background-color: var(--color-primary-2);
@@ -1075,10 +1074,10 @@ html {
     padding: 2rem;
   }
 }
-.portfolio-section-blue {
-  background-color: var(--color-primary-2); /* ✅ #26baee */
-  padding: 12rem 6rem;
-  width: 100%;
+@media (max-width: 600px) {
+  .portfolio-section-blue {
+    padding: 4rem 0; /* only top/bottom padding */
+  }
 }
 
 /* Optional: make heading/text contrast well on the blue */
@@ -1111,7 +1110,6 @@ html {
   padding: 6rem 0 12rem;
 }
 .messenger-chat-button {
-  position: fixed;
   bottom: 2rem;
   right: 2rem;
   background-color: #0084ff; /* Messenger blue */
@@ -1129,4 +1127,108 @@ html {
 .messenger-chat-button:hover {
   background-color: #005ecb;
   color: #fff;
+}
+.floating-button-group {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  z-index: 3000;
+}
+
+.call-now-btn,
+.messenger-chat-button {
+  display: inline-block;
+  background-color: var(--color-primary-2);
+  color: white;
+  padding: 1.2rem 2rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  border-radius: 5rem;
+  text-decoration: none;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s ease;
+}
+
+.call-now-btn:hover,
+.messenger-chat-button:hover {
+  background-color: var(--color-primary-4);
+  color: var(--color-grey-1);
+}
+.floating-button-group {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  z-index: 3000;
+}
+
+.call-now-btn,
+.messenger-chat-button {
+  display: inline-block;
+  background-color: var(--color-primary-2);
+  color: white;
+  padding: 1.2rem 2rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  border-radius: 5rem;
+  text-decoration: none;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s ease;
+}
+
+/* Optional hover styles */
+.call-now-btn:hover,
+.messenger-chat-button:hover {
+  background-color: var(--color-primary-4);
+  color: var(--color-grey-1);
+}
+
+/* Optional mobile tweaks */
+@media only screen and (max-width: 600px) {
+  .call-now-btn,
+  .messenger-chat-button {
+    font-size: 1.6rem;
+    padding: 1.4rem 2.2rem;
+  }
+}
+@media (max-width: 600px) {
+  .portfolio {
+    grid-template-columns: 1fr;
+    padding: 0; /* Remove extra padding */
+  }
+
+  .portfolio__photo {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .portfolio__container {
+    margin: 0;
+    padding: 0;
+  }
+}
+@media (max-width: 600px) {
+  .portfolio {
+    grid-template-columns: 1fr;
+    padding: 0; /* remove side padding */
+  }
+
+  .portfolio__container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .portfolio__photo {
+    width: 100%;
+    height: auto;
+    border-radius: 0; /* optional: remove rounded corners */
+    box-shadow: none; /* optional: remove box shadow */
+  }
 }

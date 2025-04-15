@@ -79,9 +79,20 @@ export default function RootLayout({ children }) {
         {children}
 
         {/* Global Call Button */}
-        <a href="tel:6128390429" className="call-now-btn" aria-label="Call Now">
-          Call Now!
-        </a>
+
+        <div className="floating-button-group">
+          <a href="tel:16197802862" className="call-now-btn">
+            📞
+          </a>
+          <a
+            href="https://m.me/100068177806553"
+            className="messenger-chat-button"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            💬
+          </a>
+        </div>
       </body>
     </html>
   );
