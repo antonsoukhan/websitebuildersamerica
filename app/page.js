@@ -192,9 +192,12 @@ export default function Home() {
 
         <section className="section-portfolio" id="section-portfolio">
           <div className="heading-container heading-container__portfolio">
-            <span className="heading-4 subtitle u-margin-bottom-large">
-              Portfolio
-            </span>
+            <a
+              href="/portfolio"
+              className="heading-4 subtitle u-margin-bottom-large"
+            >
+              View Full Portfolio →
+            </a>
           </div>
 
           <div className="portfolio-center">
@@ -387,7 +390,11 @@ export default function Home() {
                 <i className="ph-heart-fill"></i>
                 <b>NO MONTHLY FEES!</b>
               </p>
-              <CheckoutButton amount={49900} label="Buy Now for $499" />
+              <CheckoutButton
+                amount={49900}
+                label="Buy Now for $499"
+                style={{ marginTop: "4rem" }}
+              />
             </div>
           </div>
 

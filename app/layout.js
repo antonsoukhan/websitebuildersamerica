@@ -77,6 +77,11 @@ export default function RootLayout({ children }) {
         </Script>
 
         {children}
+
+        {/* Global Call Button */}
+        <a href="tel:6128390429" className="call-now-btn" aria-label="Call Now">
+          Call Now!
+        </a>
       </body>
     </html>
   );

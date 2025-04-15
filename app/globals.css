@@ -1006,3 +1006,46 @@ html {
     gap: 4rem;
   }
 }
+.call-now-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: var(--color-primary-2);
+  color: white;
+  font-size: 1.4rem;
+  padding: 1rem 1.6rem;
+  border-radius: 5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+  z-index: 3000;
+  text-decoration: none;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.call-now-btn:hover {
+  background-color: var(--color-primary-4);
+  color: var(--color-grey-1);
+}
+
+@media (min-width: 768px) {
+  .call-now-btn {
+    display: none;
+  }
+}
+.portfolio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+  gap: 4rem;
+  padding: 4rem 0;
+}
+
+.portfolio__photo {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
