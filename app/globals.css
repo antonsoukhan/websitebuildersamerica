@@ -1037,9 +1037,15 @@ html {
 }
 .portfolio {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 4rem;
-  padding: 4rem 0;
+  width: 100%;
+  padding: 4rem 6rem;
+}
+
+.portfolio__container {
+  margin: 0;
+  padding: 0;
 }
 
 .portfolio__photo {
@@ -1047,5 +1053,35 @@ html {
   height: auto;
   object-fit: cover;
   border-radius: 1rem;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.portfolio__photo:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive layout */
+@media (max-width: 1024px) {
+  .portfolio {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 4rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .portfolio {
+    grid-template-columns: 1fr;
+    padding: 2rem;
+  }
+}
+.portfolio-section-blue {
+  background-color: var(--color-primary-2); /* ✅ #26baee */
+  padding: 12rem 6rem;
+  width: 100%;
+}
+
+/* Optional: make heading/text contrast well on the blue */
+.portfolio-section-blue h1 {
+  color: white;
 }

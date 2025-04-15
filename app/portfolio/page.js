@@ -95,41 +95,45 @@ export default function PortfolioPage() {
     .filter((file) => file.endsWith(".png") && !brokenScreenshots.has(file));
 
   return (
-    <main className="container">
-      <h1 className="heading-1 u-margin-bottom-large">Portfolio</h1>
-      <div className="portfolio">
-        {screenshots.map((filename, i) => {
-          const link = websiteMap[filename];
-          return (
-            <figure className="portfolio__container" key={i}>
-              {link ? (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={link}
-                >
+    <main>
+      <section className="portfolio-section-blue">
+        <h1 className="heading-1 u-center-text u-margin-bottom-large">
+          Portfolio
+        </h1>
+        <div className="portfolio">
+          {screenshots.map((filename, i) => {
+            const link = websiteMap[filename];
+            return (
+              <figure className="portfolio__container" key={i}>
+                {link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={link}
+                  >
+                    <Image
+                      src={`/portfolio/${filename}`}
+                      alt={`Screenshot of ${link}`}
+                      width={1200}
+                      height={800}
+                      className="portfolio__photo"
+                    />
+                  </a>
+                ) : (
                   <Image
                     src={`/portfolio/${filename}`}
-                    alt={`Screenshot of ${link}`}
-                    width={800}
-                    height={600}
+                    alt={`Screenshot ${filename}`}
+                    width={1200}
+                    height={800}
                     className="portfolio__photo"
                   />
-                </a>
-              ) : (
-                <Image
-                  src={`/portfolio/${filename}`}
-                  alt={`Screenshot ${filename}`}
-                  width={800}
-                  height={600}
-                  className="portfolio__photo"
-                />
-              )}
-            </figure>
-          );
-        })}
-      </div>
+                )}
+              </figure>
+            );
+          })}
+        </div>
+      </section>
     </main>
   );
 }
