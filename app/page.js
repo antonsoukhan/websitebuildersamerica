@@ -505,6 +505,14 @@ export default function Home() {
           reserved.
         </p>
       </footer>
+      <a
+        href="https://m.me/100068177806553"
+        className="messenger-chat-button"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        💬 Message Us
+      </a>
     </>
   );
 }

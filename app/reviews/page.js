@@ -38,24 +38,24 @@ const reviews = [
     company: "Founder of Our Music Events",
     website: "https://www.ourmusicevents.com/",
   },
-  {
-    stars: 5,
-    headline: "Quick turnaround and very professional",
-    text: `Mana and Anton were amazing to work with. They built my business website quickly and professionally,
-        with great attention to detail. I love how everything turned out and so do my customers.`,
-    name: "Dee C.",
-    company: "Massage by Dee",
-    website: "https://www.alwaysdiamondlimo.com/",
-  },
-  {
-    stars: 5,
-    headline: "Reliable, creative, and extremely efficient",
-    text: `I was referred to Website Builders America by a friend and I couldn’t be happier.
-        They were reliable, creative, and extremely efficient. The entire process was smooth and I’ve already recommended them to others.`,
-    name: "Jessica S.",
-    company: "Remixed by J",
-    website: "https://www.jsremixedbyj.com/",
-  },
+  //   {
+  //     stars: 5,
+  //     headline: "Quick turnaround and very professional",
+  //     text: `Mana and Anton were amazing to work with. They built my business website quickly and professionally,
+  //         with great attention to detail. I love how everything turned out and so do my customers.`,
+  //     name: "Dee C.",
+  //     company: "Massage by Dee",
+  //     website: "https://www.alwaysdiamondlimo.com/",
+  //   },
+  //   {
+  //     stars: 5,
+  //     headline: "Reliable, creative, and extremely efficient",
+  //     text: `I was referred to Website Builders America by a friend and I couldn’t be happier.
+  //         They were reliable, creative, and extremely efficient. The entire process was smooth and I’ve already recommended them to others.`,
+  //     name: "Jessica S.",
+  //     company: "Remixed by J",
+  //     website: "https://www.jsremixedbyj.com/",
+  //   },
   {
     stars: 5,
     headline: "Affordable and professional",
