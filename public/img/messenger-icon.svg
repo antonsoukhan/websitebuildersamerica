@@ -1,0 +1,18 @@
+<!-- messenger-icon.svg -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  width="32"
+  height="32"
+>
+  <defs>
+    <linearGradient id="msngr" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00B2FF" />
+      <stop offset="100%" stop-color="#006AFF" />
+    </linearGradient>
+  </defs>
+  <path
+    fill="url(#msngr)"
+    d="M256 0C114.836 0 0 114.836 0 256c0 79.529 35.541 150.943 91.851 198.81v57.19l84.604-46.477C203.829 478.499 229.404 482.909 256 482.909 397.164 482.909 512 368.073 512 226.909S397.164 0 256 0zm62.271 315.223l-62.271-66.393-91.982 66.393 113.053-122.566 91.982-66.393-113.053 122.566z"
+  />
+</svg>

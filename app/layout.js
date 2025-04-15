@@ -81,16 +81,24 @@ export default function RootLayout({ children }) {
         {/* Global Call Button */}
 
         <div className="floating-button-group">
-          <a href="tel:16197802862" className="call-now-btn">
-            📞
-          </a>
           <a
             href="https://m.me/100068177806553"
             className="messenger-chat-button"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Chat on Messenger"
           >
-            💬
+            <img
+              src="/icons/Messenger.png"
+              alt="Messenger Logo"
+              style={{
+                height: "3.6rem",
+                width: "3.6rem",
+                display: "block",
+                margin: 0, // remove any default spacing
+                padding: 0, // remove any padding
+              }}
+            />
           </a>
         </div>
       </body>

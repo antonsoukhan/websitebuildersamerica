@@ -1323,3 +1323,79 @@ html {
     overflow-x: hidden;
   }
 }
+.messenger-icon {
+  width: 3.2rem;
+  height: 3.2rem;
+  display: block;
+}
+.messenger-chat-button {
+  background: none; /* Remove the blue background */
+  padding: 0;
+  box-shadow: none;
+  border: none;
+}
+.call-now-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: var(--color-primary-2);
+  color: white;
+  width: 4.8rem;
+  height: 4.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+  z-index: 3000;
+  transition: background-color 0.2s ease;
+}
+
+.call-now-btn:hover {
+  background-color: var(--color-primary-4);
+  color: var(--color-grey-1);
+}
+.floating-button-group {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* 🔧 increase spacing between buttons */
+  z-index: 3000;
+}
+.floating-button-group {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  z-index: 3000;
+}
+
+@media only screen and (max-width: 600px) {
+  .floating-button-group {
+    bottom: 6rem;
+    right: 2rem;
+    gap: 2.4rem;
+  }
+}
+.floating-button-group {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem; /* increase this to give more space */
+  z-index: 3000;
+}
+.messenger-icon {
+  height: 3.6rem;
+  width: 3.6rem;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
