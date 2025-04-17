@@ -28,7 +28,7 @@ export default function ContactForm() {
     >
       <div className="heading-container">
         <span className="heading-4 subtitle">Contact</span>
-        <h2 className="heading-2 u-margin-bottom-medium">Let's Get in Touch</h2>
+        <h2 className="heading-2 u-margin-bottom-medium">Lets Get in Touch</h2>
         <p className="paragraph-medium u-margin-bottom-large">
           Have a question or want to start a project? Reach out now!
         </p>
