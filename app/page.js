@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import CheckoutButton from "./components/CheckoutButton";
+import ContactForm from "./components/ContactForm";
 
 export default function Home() {
   useEffect(() => {
@@ -437,6 +438,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <ContactForm></ContactForm>
       <footer className="footer">
         <div className="footer__main">
           <div className="logo logo--footer">

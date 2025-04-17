@@ -1399,3 +1399,270 @@ html {
   margin: 0;
   padding: 0;
 }
+.contact-form .form-group {
+  margin-bottom: 2rem;
+}
+.contact-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.contact-form .input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--color-grey-2);
+  border-radius: 0.5rem;
+  font-family: inherit;
+}
+/* ==== CONTACT FORM ==== */
+.section-contact {
+  /* align with other centered sections */
+  grid-column: center-start / center-end;
+  padding: 8rem 0;
+}
+
+/* ==== CONTACT FORM (THEMED TO MATCH SITE) ==== */
+.section-contact {
+  grid-column: center-start / center-end;
+  padding: 12rem 0;
+  text-align: center;
+}
+
+.contact-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem 6rem;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.contact-form .form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.contact-form label {
+  font-size: var(--font-default);
+  font-weight: 500;
+  color: var(--color-grey-1);
+  margin-bottom: 0.8rem;
+}
+
+.contact-form .input {
+  font-family: inherit;
+  font-size: var(--font-default);
+  padding: 1.2rem 1.6rem;
+  border: 1px solid var(--color-grey-light-2);
+  border-radius: 0.8rem;
+  background-color: var(--color-white);
+  transition: border 0.2s ease;
+}
+
+.contact-form .input:focus {
+  border-color: var(--color-primary-2);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(38, 186, 238, 0.2);
+}
+
+/* Message textarea spans both columns */
+.contact-form .form-message {
+  grid-column: 1 / -1;
+}
+
+/* Button spans both columns */
+.contact-form button {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .contact-form {
+    grid-template-columns: 1fr;
+    gap: 2rem; /* was 4rem, now tighter */
+    padding: 0 2rem;
+  }
+
+  .contact-form .form-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-form .form-message,
+  .contact-form button {
+    grid-column: auto;
+  }
+
+  .contact-form button {
+    margin-top: 1.5rem;
+  }
+}
+@media (max-width: 768px) {
+  .section-contact {
+    padding-top: 4rem; /* was 12rem, now tighter for mobile */
+  }
+
+  .heading-container {
+    margin-top: 0; /* just in case there's top margin */
+  }
+}
+.contact-form button {
+  grid-column: 1 / -1;
+  justify-self: center;
+  /* add this: */
+  margin-bottom: 0;
+}
+@media (max-width: 768px) {
+  .section-contact {
+    padding-bottom: 4rem; /* reduce bottom space from 8rem or 12rem */
+  }
+
+  .contact-form button {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 37.5rem) {
+  #pricing,
+  #how-it-works {
+    margin-top: 2rem; /* or adjust as needed */
+    scroll-margin-top: 8rem; /* helps with anchor scrolling offset */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-process,
+  .section-pricing {
+    margin-top: 4rem !important; /* was 12rem */
+    padding-top: 4rem !important;
+  }
+
+  .heading-container__pricing,
+  .heading-container__process {
+    margin-top: 0 !important;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-pricing {
+    margin-top: 3rem !important; /* Reduce top space */
+    padding-top: 3rem !important;
+  }
+
+  .heading-container__pricing {
+    margin-top: 0 !important;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .heading-container__reviews {
+    margin-top: 3rem !important; /* Reduce top space */
+    padding-top: 0 !important;
+  }
+
+  .section-reviews {
+    margin-top: 3rem !important; /* In case this is adding space too */
+    padding-top: 0 !important;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-reviews {
+    margin: 4rem 0 !important; /* equal space top and bottom */
+  }
+
+  .heading-container__reviews {
+    margin: 0 auto !important; /* center without adding top space */
+    padding: 0 !important;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .review-box__read {
+    text-align: center;
+    margin-top: 2rem !important; /* less space above */
+    margin-bottom: 2rem !important; /* less space below */
+  }
+
+  .review-box__read .btn-text {
+    display: inline-block;
+    margin: 0 auto;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .heading-container__portfolio {
+    margin-top: 2rem !important;
+    padding-top: 0 !important;
+  }
+
+  .section-portfolio {
+    padding-top: 4rem !important; /* was 12rem */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-portfolio {
+    padding-top: 2rem !important; /* reduce top padding */
+  }
+
+  .heading-container__portfolio {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .heading-container__portfolio .subtitle {
+    margin-top: 0 !important;
+    margin-bottom: 2rem !important; /* control spacing under the link */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-pricing {
+    margin-bottom: 2rem !important; /* Reduce space below the section */
+    padding-bottom: 2rem !important;
+  }
+
+  .section-pricing .btn-link {
+    margin-bottom: 10 !important;
+    display: flex;
+    justify-content: center;
+  }
+
+  .section-pricing .btn {
+    margin-bottom: 10 !important;
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .user-box {
+    margin-bottom: 2rem !important; /* adds space below the quote box */
+  }
+
+  .header__text-box .btn-text {
+    margin-top: 0 !important; /* remove u-margin-top-exsmall effect */
+  }
+}
+@media (max-width: 37.5em) {
+  .section-contact {
+    padding-bottom: 4rem !important; /* was probably 8rem or 12rem */
+  }
+
+  .contact-form button {
+    margin-bottom: 0 !important; /* remove extra space below button */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-contact {
+    padding-bottom: 2rem !important; /* reduce space below the form */
+  }
+
+  .contact-form button {
+    margin-bottom: 0 !important; /* no extra margin under button */
+  }
+}
+@media only screen and (max-width: 37.5em) {
+  .section-contact {
+    padding-bottom: 2rem !important; /* Tighten space below the form */
+    margin-bottom: 0 !important; /* Remove any section margin */
+  }
+
+  .contact-form {
+    margin-bottom: 0 !important;
+    padding-bottom: 20 !important;
+  }
+
+  .contact-form button {
+    margin-bottom: 0 !important;
+  }
+}
