@@ -1339,8 +1339,6 @@ html {
   color: var(--color-grey-1);
 }
 
-
-
 @media only screen and (max-width: 600px) {
   .floating-button-group {
     bottom: 6rem;
@@ -1372,11 +1370,6 @@ html {
   font-family: inherit;
 }
 /* ==== CONTACT FORM ==== */
-.section-contact {
-  /* align with other centered sections */
-  grid-column: center-start / center-end;
-  padding: 8rem 0;
-}
 
 /* ==== CONTACT FORM (THEMED TO MATCH SITE) ==== */
 .section-contact {
@@ -1487,11 +1480,6 @@ html {
 }
 @media only screen and (max-width: 37.5em) {
   .section-process,
-  .section-pricing {
-    margin-top: 4rem !important; /* was 12rem */
-    padding-top: 4rem !important;
-  }
-
   .heading-container__pricing,
   .heading-container__process {
     margin-top: 0 !important;
@@ -1590,24 +1578,7 @@ html {
     margin-top: 0 !important; /* remove u-margin-top-exsmall effect */
   }
 }
-@media (max-width: 37.5em) {
-  .section-contact {
-    padding-bottom: 4rem !important; /* was probably 8rem or 12rem */
-  }
 
-  .contact-form button {
-    margin-bottom: 0 !important; /* remove extra space below button */
-  }
-}
-@media only screen and (max-width: 37.5em) {
-  .section-contact {
-    padding-bottom: 2rem !important; /* reduce space below the form */
-  }
-
-  .contact-form button {
-    margin-bottom: 0 !important; /* no extra margin under button */
-  }
-}
 @media only screen and (max-width: 37.5em) {
   .section-contact {
     padding-bottom: 2rem !important; /* Tighten space below the form */
