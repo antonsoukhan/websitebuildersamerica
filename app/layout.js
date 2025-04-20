@@ -81,6 +81,7 @@ export default function RootLayout({ children }) {
         {/* Global Call Button */}
 
         <div className="floating-button-group">
+          {/* Messenger */}
           <a
             href="https://m.me/100068177806553"
             className="messenger-chat-button"
@@ -95,10 +96,27 @@ export default function RootLayout({ children }) {
                 height: "3.6rem",
                 width: "3.6rem",
                 display: "block",
-                margin: 0, // remove any default spacing
-                padding: 0, // remove any padding
+                margin: 0,
+                padding: 0,
               }}
             />
+          </a>
+
+          {/* Call Me with Phosphor Icon */}
+          <a
+            href="tel:+16128390429"
+            className="call-me-button"
+            aria-label="Call Us"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <i
+              className="ph ph-phone"
+              style={{ fontSize: "3.6rem", color: "#26baee" }}
+            ></i>
           </a>
         </div>
       </body>
