@@ -1,34 +1,48 @@
-import connectDB from "@/lib/db";
-import Post from "@/models/Post";
-import Link from "next/link";
+"use client";
 
-export default async function BlogPage() {
-  await connectDB();
-  const posts = await Post.find().sort({ createdAt: -1 });
+import { useContext, useEffect, useState } from "react";
+import { SearchContext } from "./layout"; // 👈 import your context
+
+async function fetchPosts() {
+  const res = await fetch("/api/posts");
+  const data = await res.json();
+  return data;
+}
+
+export default function BlogPage() {
+  const searchQuery = useContext(SearchContext); // 👈 get searchQuery from context
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    async function loadPosts() {
+      const allPosts = await fetchPosts();
+      setPosts(allPosts);
+    }
+    loadPosts();
+  }, []);
+
+  const filteredPosts = posts.filter((post) => {
+    const titleMatch = post.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const contentMatch = post.content
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return titleMatch || contentMatch;
+  });
 
   return (
-    <>
-      {posts.map((post) => (
-        <article key={post._id} style={{ marginBottom: "60px" }}>
-          <h2 style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
-            {post.title}
-          </h2>
-          <p
-            style={{ fontSize: "0.85rem", color: "#777", marginBottom: "20px" }}
-          >
-            {new Date(post.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-          <div
-            dangerouslySetInnerHTML={{ __html: post.content }}
-            style={{ fontSize: "1.05rem", lineHeight: "1.7" }}
-          />
-          <hr style={{ marginTop: "40px", borderColor: "#eee" }} />
-        </article>
-      ))}
-    </>
+    <div className="blog-container">
+      {filteredPosts.length > 0 ? (
+        filteredPosts.map((post) => (
+          <article key={post._id} style={{ marginBottom: "40px" }}>
+            <h2>{post.title}</h2>
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </article>
+        ))
+      ) : (
+        <p>No matching posts found.</p>
+      )}
+    </div>
   );
 }

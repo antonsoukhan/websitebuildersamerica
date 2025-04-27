@@ -1603,3 +1603,29 @@ html {
   gap: 0.5rem; /* spacing between buttons */
   z-index: 9999;
 }
+.blog-container {
+  width: 100%;
+  max-width: 700px; /* width limit like Seth */
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+@media (min-width: 1200px) {
+  .blog-container {
+    margin: 0 0 0 10%; /* shift left when screen is wide */
+  }
+}
+.search-bar {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 1.2rem 2rem;
+  font-size: 1.6rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+}
