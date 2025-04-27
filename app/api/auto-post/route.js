@@ -12,10 +12,10 @@ export async function POST() {
     });
 
     const prompts = [
-      "Write a 1000-word blog post giving small businesses SEO tips to improve website ranking in 2024.",
-      "Write a 1000-word blog post about how to get more clients using Instagram and Facebook marketing.",
-      "Write a 1000-word blog post explaining 5 simple web design improvements that boost SEO rankings.",
-      "Write a 1000-word blog post about optimizing Google Business Profile to attract more local clients.",
+      "Write a 1000-word blog post about SEO tips for small businesses. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a 1000-word blog post about using Instagram to grow a business. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a 1000-word blog post giving 5 web design tips to boost SEO. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a 1000-word blog post about optimizing your Google Business Profile. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
     ];
 
     const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
@@ -29,12 +29,28 @@ export async function POST() {
 
     const generatedContent = response.choices[0].message.content;
 
-    const titleMatch = generatedContent.match(/^# (.+)$/m);
-    const title = titleMatch ? titleMatch[1] : "New Blog Post";
+    // Extract Title
+    const titleMatch = generatedContent.match(/^Title:\s*(.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : "Untitled Post";
+    function generateSlug(title) {
+      return title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // Remove all non-alphanumeric chars
+        .trim()
+        .replace(/\s+/g, "-"); // Replace spaces with -
+    }
+    const slug = generateSlug(title);
 
+    // Remove the title line from the content
+    const contentWithoutTitle = generatedContent
+      .replace(/^Title:.*$/m, "")
+      .trim();
+
+    // Save to MongoDB
     const newPost = new Post({
       title: title,
-      content: generatedContent.replace(/^# .+$/m, ""),
+      slug: slug, // ✅ Save the slug too
+      content: contentWithoutTitle,
       createdAt: new Date(),
     });
 
