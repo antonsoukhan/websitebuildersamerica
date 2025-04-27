@@ -1,4 +1,5 @@
 "use client";
+import PostIcons from "../components/PostIcons"; // Adjust the path if needed
 
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "./layout"; // 👈 import your context
@@ -38,6 +39,7 @@ export default function BlogPage() {
           <article key={post._id} style={{ marginBottom: "40px" }}>
             <h2>{post.title}</h2>
             <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            <PostIcons></PostIcons>
           </article>
         ))
       ) : (

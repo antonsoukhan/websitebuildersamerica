@@ -12,10 +12,10 @@ export async function POST() {
     });
 
     const prompts = [
-      "Write a 1000-word blog post about SEO tips for small businesses. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
-      "Write a 1000-word blog post about using Instagram to grow a business. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
-      "Write a 1000-word blog post giving 5 web design tips to boost SEO. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
-      "Write a 1000-word blog post about optimizing your Google Business Profile. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a blog post about SEO tips for small businesses. Make it around 500–700 words. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a blog post about how to get more clients using Instagram and Facebook. Make it around 500–700 words. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a blog post giving 5 simple web design tips to boost SEO rankings. Make it around 500–700 words. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
+      "Write a blog post about optimizing a Google Business Profile to attract more local clients. Make it around 500–700 words. Start with the title on the first line in this format: 'Title: [your catchy blog title here]'. Then write the blog content below.",
     ];
 
     const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
