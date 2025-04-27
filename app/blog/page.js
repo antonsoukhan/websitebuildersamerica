@@ -1,6 +1,6 @@
 "use client";
 import PostIcons from "../components/PostIcons"; // Adjust the path if needed
-
+import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "./layout"; // 👈 import your context
 
@@ -38,8 +38,25 @@ export default function BlogPage() {
         filteredPosts.map((post) => (
           <article key={post._id} style={{ marginBottom: "40px" }}>
             <h2>{post.title}</h2>
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-            <PostIcons></PostIcons>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: post.content.substring(0, 300) + "...",
+              }}
+              style={{ fontSize: "1rem", color: "#555" }}
+            />
+            <PostIcons />
+            <Link
+              href={`/blog/${post.slug}`}
+              style={{
+                display: "inline-block",
+                marginTop: "20px",
+                color: "#0070f3",
+                textDecoration: "underline",
+                fontSize: "0.9rem",
+              }}
+            >
+              Read More →
+            </Link>
           </article>
         ))
       ) : (
