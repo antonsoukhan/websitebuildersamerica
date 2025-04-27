@@ -7,9 +7,14 @@ export async function GET() {
   const posts = await Post.find().sort({ createdAt: -1 });
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://websitebuildersamerica.com"; // ✅ Replace or use env var
+    process.env.NEXT_PUBLIC_SITE_URL || "https://websitebuildersamerica.com";
 
-  const staticPages = [`${baseUrl}/`, `${baseUrl}/blog`];
+  const staticPages = [
+    `${baseUrl}/`,
+    `${baseUrl}/blog`,
+    `${baseUrl}/portfolio`,
+    `${baseUrl}/reviews`,
+  ];
 
   const dynamicPages = posts.map((post) => {
     return `${baseUrl}/blog/${post.slug}`;
