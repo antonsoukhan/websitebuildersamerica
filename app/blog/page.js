@@ -1,8 +1,9 @@
 "use client";
-import PostIcons from "../components/PostIcons"; // Adjust the path if needed
+
+import PostIcons from "../components/PostIcons";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
-import { SearchContext } from "./layout"; // 👈 import your context
+import { SearchContext } from "./layout";
 
 async function fetchPosts() {
   const res = await fetch("/api/posts");
@@ -11,13 +12,15 @@ async function fetchPosts() {
 }
 
 export default function BlogPage() {
-  const searchQuery = useContext(SearchContext); // 👈 get searchQuery from context
+  const searchQuery = useContext(SearchContext);
   const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadPosts() {
       const allPosts = await fetchPosts();
       setPosts(allPosts);
+      setIsLoading(false);
     }
     loadPosts();
   }, []);
@@ -33,8 +36,13 @@ export default function BlogPage() {
   });
 
   return (
-    <div className="blog-container">
-      {filteredPosts.length > 0 ? (
+    <div className="blog-container" style={{ padding: "40px 20px" }}>
+      {isLoading ? (
+        <div style={{ textAlign: "center", padding: "60px" }}>
+          <div className="spinner" />
+          <p style={{ color: "#777", marginTop: "12px" }}>Loading posts...</p>
+        </div>
+      ) : filteredPosts.length > 0 ? (
         filteredPosts.map((post) => (
           <article key={post._id} style={{ marginBottom: "40px" }}>
             <h2>{post.title}</h2>
@@ -60,7 +68,14 @@ export default function BlogPage() {
           </article>
         ))
       ) : (
-        <p>No matching posts found.</p>
+        <div style={{ textAlign: "center", padding: "50px 20px" }}>
+          <h2 style={{ fontSize: "1.8rem", marginBottom: "10px" }}>
+            No matching posts found
+          </h2>
+          <p style={{ color: "#666" }}>
+            Try changing your search or check back later.
+          </p>
+        </div>
       )}
     </div>
   );

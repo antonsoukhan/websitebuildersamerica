@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // ✅ Correct for App Router
 
 // Create Context
 export const SearchContext = createContext("");
@@ -9,10 +10,22 @@ export const SearchContext = createContext("");
 export default function BlogLayout({ children }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const router = useRouter();
+
+  const handleArchiveClick = () => {
+    setArchiveLoading(true);
+    router.push("/blog/archive");
+
+    // ✅ Reset loading after short delay (fallback since App Router has no router.events)
+    setTimeout(() => {
+      setArchiveLoading(false);
+    }, 1500); // adjust time as needed
+  };
 
   return (
     <SearchContext.Provider value={searchQuery}>
-      <div className="forum-layout">
+      <div className="forum-layout" style={{ display: "flex" }}>
         {/* Desktop Sidebar */}
         <aside
           className="forum-sidebar"
@@ -30,7 +43,10 @@ export default function BlogLayout({ children }) {
           }}
         >
           <h1 style={{ fontSize: "1.8rem", marginBottom: "10px" }}>
-            <Link href="/" style={{ textDecoration: "none", color: "#000" }}>
+            <Link
+              href="/blog"
+              style={{ textDecoration: "none", color: "#000" }}
+            >
               YOUR BLOG
             </Link>
           </h1>
@@ -90,23 +106,40 @@ export default function BlogLayout({ children }) {
             </button>
           </form>
 
-          <Link
-            href="/blog/archive"
+          <button
+            onClick={handleArchiveClick}
+            disabled={archiveLoading}
             style={{
               marginTop: "30px",
               fontSize: "0.9rem",
               color: "#000",
               textDecoration: "underline",
+              background: "none",
+              border: "none",
+              cursor: archiveLoading ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
             }}
           >
-            View Archive
-          </Link>
+            {archiveLoading ? (
+              <>
+                <span
+                  className="spinner"
+                  style={{ width: "16px", height: "16px" }}
+                ></span>
+                Loading...
+              </>
+            ) : (
+              "View Archive"
+            )}
+          </button>
         </aside>
 
         {/* Main Column */}
         <div style={{ flex: 1 }}>
           {/* Mobile Accordion */}
-          <div className="mobile-forum-menu">
+          <div className="mobile-forum-menu" style={{ padding: "1rem" }}>
             <details
               open={isAccordionOpen}
               onToggle={(e) => setIsAccordionOpen(e.target.open)}
@@ -118,7 +151,7 @@ export default function BlogLayout({ children }) {
               <div className="mobile-forum-content">
                 <h1 style={{ fontSize: "1.8rem", marginBottom: "10px" }}>
                   <Link
-                    href="/"
+                    href="/blog"
                     style={{ textDecoration: "none", color: "#000" }}
                   >
                     YOUR BLOG
@@ -176,16 +209,33 @@ export default function BlogLayout({ children }) {
                   </button>
                 </form>
 
-                <Link
-                  href="/blog/archive"
+                <button
+                  onClick={handleArchiveClick}
+                  disabled={archiveLoading}
                   style={{
                     fontSize: "0.9rem",
                     color: "#000",
                     textDecoration: "underline",
+                    background: "none",
+                    border: "none",
+                    cursor: archiveLoading ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                 >
-                  View Archive
-                </Link>
+                  {archiveLoading ? (
+                    <>
+                      <span
+                        className="spinner"
+                        style={{ width: "16px", height: "16px" }}
+                      ></span>
+                      Loading...
+                    </>
+                  ) : (
+                    "View Archive"
+                  )}
+                </button>
               </div>
             </details>
           </div>
