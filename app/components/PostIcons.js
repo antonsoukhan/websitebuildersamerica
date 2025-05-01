@@ -12,12 +12,17 @@ export default function PostIcons() {
         marginTop: "20px",
       }}
     >
-      <a href="mailto:you@example.com" title="Email" style={iconStyle}>
+      <a
+        href="mailto:websitebuildersamerica@gmail.com"
+        title="Email"
+        style={iconStyle}
+      >
         <FaEnvelope />
       </a>
       <a
-        href="https://twitter.com/yourhandle"
+        href="https://twitter.com/WebBuilders_USA"
         target="_blank"
+        rel="noopener noreferrer"
         title="Twitter"
         style={iconStyle}
       >
