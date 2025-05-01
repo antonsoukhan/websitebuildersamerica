@@ -78,9 +78,11 @@ export default function Home() {
                 <li>
                   <a href="#about">About Us</a>
                 </li>
-                <Link href="/blog/" legacyBehavior>
-                  <a>Go to Blog</a>
-                </Link>
+                <li>
+                  <Link href="/blog/" legacyBehavior>
+                    <a>Go to Blog</a>
+                  </Link>
+                </li>
               </ul>
             </nav>
 
