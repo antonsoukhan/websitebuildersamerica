@@ -397,8 +397,8 @@ export default function Home() {
                 <b>NO MONTHLY FEES!</b>
               </p>
               <CheckoutButton
-                amount={49900}
-                label="Buy Now for $499"
+                amount={14900}
+                label="Buy Now for $149"
                 style={{ marginTop: "4rem" }}
               />
             </div>

@@ -6,7 +6,7 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 );
 
-export default function CheckoutButton({ amount = 49900, label, style }) {
+export default function CheckoutButton({ amount = 14900, label, style }) {
   const handleClick = async () => {
     const res = await fetch("/api/checkout", {
       method: "POST",
