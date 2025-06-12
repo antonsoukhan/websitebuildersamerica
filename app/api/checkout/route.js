@@ -4,7 +4,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
   const body = await req.json();
-  const amount = body.amount || 49900; // fallback if none sent
+  const amount = body.amount || 14900; // fallback if none sent
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
