@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import connectDB from "@/lib/db";
 import Post from "@/models/Post";
 import Link from "next/link";
