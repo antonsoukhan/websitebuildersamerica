@@ -1895,3 +1895,32 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* ✅ Only keep ONE */
+.service-box__list {
+  margin-top: 12px;
+  padding-left: 24px;
+  list-style-type: disc;
+  font-size: 1.05rem;
+  color: #333;
+  line-height: 1.9;
+  max-width: 700px;
+}
+
+@media (max-width: 768px) {
+  .feature-box__features {
+    margin-bottom: 40px;
+  }
+
+  .service-box__list {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding-left: 16px;
+  }
+}
+.feature-box__features .service-box__list {
+  font-size: 1.05rem !important;
+  line-height: 1.9 !important;
+  max-width: 700px;
+  color: #333;
+}

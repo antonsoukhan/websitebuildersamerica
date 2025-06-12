@@ -77,6 +77,12 @@ export default function Home() {
                 </li>
                 <li>
                   <a href="#about">About Us</a>
+                </li>{" "}
+                <li>
+                  <a href="#section-services">Services</a>
+                </li>{" "}
+                <li>
+                  <a href="#contact">Contact Us</a>
                 </li>
                 <li>
                   <Link href="/blog/" legacyBehavior>
@@ -139,7 +145,6 @@ export default function Home() {
             </div>
           </div>
         </header>
-
         <section className="section-features" id="section-features">
           <div className="heading-container">
             <span className="heading-4 subtitle">Top features</span>
@@ -242,6 +247,138 @@ export default function Home() {
                   </a>
                 </figure>
               ))}
+            </div>
+          </div>
+        </section>
+        <section className="section-features" id="section-services">
+          <div className="heading-container">
+            <span className="heading-4 subtitle">My Services</span>
+
+            <h2 className="heading-2 u-margin-bottom-exsmall">
+              Full-Stack Solutions — Frontend to Backend
+            </h2>
+
+            <p className="paragraph-medium u-margin-bottom-xl">
+              I build complete software systems tailored to your needs — from
+              the user interface down to the database and deployment pipeline.
+            </p>
+          </div>
+
+          <div className="feature-box">
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-browser-thin"></i>
+                </span>
+                Frontend Development
+              </h3>
+              <p className="feature-box__text">
+                Fast, responsive, and accessible interfaces built with React and
+                Next.js. I ensure your site looks great on all devices and loads
+                fast.
+              </p>
+              <ul className="service-box__list">
+                <li>Responsive layouts & mobile-first design</li>
+                <li>Modern frameworks (React, Next.js)</li>
+                <li>SEO optimization & accessibility</li>
+                <li>Client-side routing & smooth UI state</li>
+              </ul>
+            </div>
+
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-database-thin"></i>
+                </span>
+                Backend & APIs
+              </h3>
+              <p className="feature-box__text">
+                Scalable, secure backend systems with custom REST and GraphQL
+                APIs, robust database architecture, and authentication flows.
+              </p>
+              <ul className="service-box__list">
+                <li>Node.js, Express, MongoDB, PostgreSQL</li>
+                <li>RESTful & GraphQL API development</li>
+                <li>Authentication, user roles & session handling</li>
+                <li>Custom dashboards & content management</li>
+              </ul>
+            </div>
+
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-cloud-thin"></i>
+                </span>
+                Deployment & DevOps
+              </h3>
+              <p className="feature-box__text">
+                Fully managed deployments, CI/CD pipelines, and cloud
+                infrastructure for fast, secure, and scalable hosting.
+              </p>
+              <ul className="service-box__list">
+                <li>Deployments with Vercel, AWS, DigitalOcean</li>
+                <li>Serverless functions & scalable hosting</li>
+                <li>CI/CD automation via GitHub Actions</li>
+                <li>Environment variable & secrets management</li>
+              </ul>
+            </div>
+          </div>
+          <div className="feature-box">
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-shopping-cart-thin"></i>
+                </span>
+                E-commerce Integration
+              </h3>
+              <p className="feature-box__text">
+                Seamless online stores with Stripe or PayPal integration,
+                product management, carts, and secure checkout flows.
+              </p>
+              <ul className="service-box__list">
+                <li>Stripe / PayPal checkout integration</li>
+                <li>Product listing pages & search filters</li>
+                <li>Order management & fulfillment logic</li>
+                <li>Secure admin panel for tracking sales</li>
+              </ul>
+            </div>
+
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-wrench-thin"></i>
+                </span>
+                Maintenance & Optimization
+              </h3>
+              <p className="feature-box__text">
+                Keep your website running smoothly with performance
+                enhancements, bug fixes, and SEO improvements.
+              </p>
+              <ul className="service-box__list">
+                <li>Page speed & Lighthouse performance tuning</li>
+                <li>Bug fixes & cross-browser QA</li>
+                <li>On-page SEO, metadata & rich snippets</li>
+                <li>Google indexing & analytics setup</li>
+              </ul>
+            </div>
+
+            <div className="feature-box__features">
+              <h3 className="heading-3">
+                <span className="icon">
+                  <i className="feature-box__icon ph-cpu-thin"></i>
+                </span>
+                Custom Tools & Automations
+              </h3>
+              <p className="feature-box__text">
+                Tailored solutions like internal dashboards, AI-powered tools,
+                or Zapier-powered automation workflows.
+              </p>
+              <ul className="service-box__list">
+                <li>Custom CMS tools & reporting dashboards</li>
+                <li>OpenAI, Google Calendar, Maps API integration</li>
+                <li>Zapier or webhook-triggered automations</li>
+                <li>CRON jobs, scheduled tasks, auto-emails</li>
+              </ul>
             </div>
           </div>
         </section>
