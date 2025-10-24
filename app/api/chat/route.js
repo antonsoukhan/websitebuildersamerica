@@ -1,14 +1,20 @@
 // app/api/chat/route.js
-export const runtime = "nodejs"; // ensure Node runtime (smtp works)
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-/** Session store (in-memory per server instance):
- * sessions[sid] = { emailed: boolean, lastHash: string, sentForContacts: Set<string> }
- */
+// -------------------------
+// In-memory session store
+// sessions[sid] = {
+//   turns: [{ role: "user"|"assistant", content: string }],
+//   lastEmailHash: string,
+//   confirmationsSentTo: Set<string>   // customer emails already confirmed
+// }
+// -------------------------
 const sessions = Object.create(null);
 
+// --- Helpers ---
 function hashText(text) {
   let h = 0;
   for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
@@ -21,41 +27,87 @@ const phoneRegex =
 
 function extractContact(text) {
   const email = text.match(emailRegex)?.[0] || null;
-  // Trim whitespace + stray punctuation on phones like “612-839-0429.”
+  // Trim stray trailing punctuation on phones like “612-839-0429.”
   const phone =
     text
       .match(phoneRegex)?.[0]
       ?.trim()
-      ?.replace(/[^\d+()\-. \s]/g, "") || null;
-  const contactKey = email || phone || null;
-  return { email, phone, contactKey };
+      ?.replace(/[^\d+()\-.\s]/g, "") || null;
+  return { email, phone, contactKey: email || phone || null };
 }
 
 function appointmentConfirmed(text) {
   return /(we have you scheduled|you are scheduled|appointment.*confirmed|see you|looking forward to speaking|booking.*confirmed|confirmed for)/i.test(
-    text
+    text || ""
   );
 }
 
-async function sendEmail(subject, text) {
-  const transporter = nodemailer.createTransport({
+function createTransport() {
+  // Reliable Gmail SMTP (requires App Password)
+  return nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
       user: process.env.EMAIL_USER, // e.g. websitebuildersamerica@gmail.com
-      pass: process.env.EMAIL_PASS, // Gmail App Password
+      pass: process.env.EMAIL_PASS, // Gmail App Password (not your login)
     },
   });
+}
 
+async function sendAdminTranscriptEmail({
+  transcript,
+  sid,
+  turns,
+  email,
+  phone,
+  subject,
+}) {
+  const transporter = createTransport();
   const to = process.env.LEAD_EMAIL_TO || process.env.EMAIL_USER;
-  console.log("[chat/email] sending →", { to, subject });
+
+  const header =
+    `Session: ${sid}\n` +
+    `Turns: ${turns}\n` +
+    `${email ? "Email: " + email + "\n" : ""}` +
+    `${phone ? "Phone: " + phone + "\n" : ""}`;
+
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to,
     subject,
+    text: `${header}\n\nFull Conversation:\n\n${transcript}`,
+  });
+
+  console.log("[chat/email] admin transcript sent →", to, subject);
+}
+
+async function sendCustomerConfirmationEmail(customerEmail) {
+  if (!customerEmail) return;
+  const transporter = createTransport();
+
+  const text = `
+Hi there,
+
+Thanks for chatting with Website Builders America!
+We’ve received your message and will reach out shortly.
+
+If you’d like to speed things up, you can also call or text us:
+(612) 839-0429
+https://websitebuildersamerica.com
+
+Best,
+Website Builders America
+`;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: customerEmail,
+    subject: "We’ve received your message — Website Builders America",
     text,
   });
+
+  console.log("[chat/email] customer confirmation sent →", customerEmail);
 }
 
 export async function POST(req) {
@@ -67,25 +119,29 @@ export async function POST(req) {
       finalize = false,
     } = await req.json();
     const sid = sessionId || "anon";
-    if (!sessions[sid])
+
+    // Initialize session bucket
+    if (!sessions[sid]) {
       sessions[sid] = {
-        emailed: false,
-        lastHash: "",
-        sentForContacts: new Set(),
+        turns: [],
+        lastEmailHash: "",
+        confirmationsSentTo: new Set(),
       };
+    }
+
+    const MODEL = process.env.OPENAI_MODEL || "gpt-3.5-turbo"; // cheap default
 
     const systemMessage = `
-      You are a helpful assistant for Website Builders America (websitebuildersamerica.com).
-      You can build ANY type of website. Your goal is to book a consultation.
-      Politely gather: full name, email, phone, website type, preferred day/time.
-      Only confirm the appointment when email + phone + website type + time are present.
-      Be concise, friendly, and professional.
-    `;
+You are a helpful assistant for Website Builders America (websitebuildersamerica.com).
+Collect full name, email, phone, website type, and preferred day/time.
+Only say "you'll receive an email confirmation" if the user has provided an email address.
+Be concise, friendly, and professional.
+    `.trim();
 
+    // 1) Get assistant reply unless this is finalize-only
     let assistantReply = "";
-
-    // Only call OpenAI when NOT finalize-only
     if (!finalize && typeof message === "string" && message.length) {
+      const serverContext = sessions[sid].turns.slice(-12); // keep token usage low
       const openaiRes = await fetch(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -95,10 +151,10 @@ export async function POST(req) {
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: MODEL,
             messages: [
               { role: "system", content: systemMessage },
-              ...conversation,
+              ...serverContext,
               { role: "user", content: message },
             ],
           }),
@@ -106,25 +162,25 @@ export async function POST(req) {
       );
 
       const data = await openaiRes.json();
-      assistantReply = data?.choices?.[0]?.message?.content || "No response";
+      if (data?.error) {
+        console.error("[chat/openai-error]", data.error);
+        assistantReply = "Sorry, something went wrong.";
+      } else {
+        assistantReply = data?.choices?.[0]?.message?.content || "No response";
+      }
     }
 
-    // Build transcript including the latest turn (if present)
-    const full = [
-      ...conversation,
-      ...(message ? [{ role: "user", content: message }] : []),
-      ...(assistantReply
-        ? [{ role: "assistant", content: assistantReply }]
-        : []),
-    ];
+    // 2) Append new turn(s) to server-side log
+    if (message) sessions[sid].turns.push({ role: "user", content: message });
+    if (assistantReply)
+      sessions[sid].turns.push({ role: "assistant", content: assistantReply });
 
-    const transcript = full
+    // 3) Build FULL transcript from server storage
+    const transcript = sessions[sid].turns
       .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
       .join("\n");
-
     const { email, phone, contactKey } = extractContact(transcript);
-    const confirmedNow =
-      !!assistantReply && appointmentConfirmed(assistantReply);
+    const confirmedNow = assistantReply && appointmentConfirmed(assistantReply);
     const hash = hashText(transcript);
 
     console.log("[chat]", {
@@ -132,57 +188,62 @@ export async function POST(req) {
       finalize,
       confirmedNow,
       contactKey,
-      hash,
-      turns: full.length,
+      email,
+      phone,
+      turns: sessions[sid].turns.length,
     });
 
-    // =========================
-    // WHEN TO EMAIL (always include FULL transcript)
-    // =========================
-    // A) First time we detect a contact in this session  -> "New Chatbot Lead Captured"
-    // B) Appointment confirmed by assistant (has contact)-> "Chatbot Appointment Confirmed"
-    // C) finalize:true (on close/inactivity)             -> "Chatbot Transcript (Finalized)"  [NO contact required]
-    let shouldSend = false;
-    let subject = "New Chatbot Lead Captured";
+    // 4) Decide when to email you (admin)
+    //    - First contact captured → "New Chatbot Lead Captured"
+    //    - Appointment confirmed (with contact) → "Chatbot Appointment Confirmed"
+    //    - Finalize (always) → "Chatbot Transcript (Finalized)"
+    let shouldEmailAdmin = false;
+    let adminSubject = "New Chatbot Lead Captured";
 
-    if (contactKey && !sessions[sid].sentForContacts.has(contactKey)) {
-      shouldSend = true;
-      subject = "New Chatbot Lead Captured";
+    if (contactKey && !sessions[sid].emailedOnFirstContact) {
+      shouldEmailAdmin = true;
+      adminSubject = "New Chatbot Lead Captured";
+      sessions[sid].emailedOnFirstContact = true;
     }
-    if (!shouldSend && confirmedNow && contactKey) {
-      shouldSend = true;
-      subject = "Chatbot Appointment Confirmed";
+    if (!shouldEmailAdmin && confirmedNow && contactKey) {
+      shouldEmailAdmin = true;
+      adminSubject = "Chatbot Appointment Confirmed";
     }
-    if (!shouldSend && finalize) {
-      shouldSend = true;
-      subject = "Chatbot Transcript (Finalized)";
+    if (!shouldEmailAdmin && finalize) {
+      shouldEmailAdmin = true;
+      adminSubject = "Chatbot Transcript (Finalized)";
     }
 
-    if (shouldSend) {
-      // De-dupe identical transcript emails
-      if (sessions[sid].lastHash === hash) {
-        console.log("[chat/email] skipped (same transcript hash)");
+    // 5) Send admin transcript email (de-duped by transcript hash)
+    if (shouldEmailAdmin) {
+      if (sessions[sid].lastEmailHash !== hash) {
+        await sendAdminTranscriptEmail({
+          transcript,
+          sid,
+          turns: sessions[sid].turns.length,
+          email,
+          phone,
+          subject: adminSubject,
+        });
+        sessions[sid].lastEmailHash = hash;
       } else {
-        const header =
-          `Session: ${sid}\n` +
-          `Turns: ${full.length}\n` +
-          `${email ? "Email: " + email + "\n" : ""}` +
-          `${phone ? "Phone: " + phone + "\n" : ""}`;
-
-        await sendEmail(
-          subject,
-          `${header}\n\nFull Conversation:\n\n${transcript}`
-        );
-
-        sessions[sid].lastHash = hash;
-        sessions[sid].emailed = true;
-        if (contactKey) sessions[sid].sentForContacts.add(contactKey);
-        console.log("[chat/email] sent OK");
+        console.log("[chat/email] admin skipped (same transcript hash)");
       }
     } else {
-      console.log("[chat/email] not sent (no trigger met)");
+      console.log("[chat/email] admin not sent (no trigger met)");
     }
 
+    // 6) Send customer confirmation email once we have their email
+    if (email && !sessions[sid].confirmationsSentTo.has(email)) {
+      try {
+        await sendCustomerConfirmationEmail(email);
+        sessions[sid].confirmationsSentTo.add(email);
+      } catch (e) {
+        console.error("[chat/email] customer confirmation failed:", e);
+      }
+    }
+
+    // 7) Respond to client
     return NextResponse.json({ reply: assistantReply || "" });
   } catch (err) {
     console.error("[chat/error]", err);
