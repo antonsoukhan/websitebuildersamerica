@@ -15,10 +15,15 @@ export default function ChatbotWidget() {
   // ---------------- REFS ----------------
   const widgetRef = useRef(null);
   const headerRef = useRef(null);
-  const messagesWrapRef = useRef(null); // <---- scroll container
+  const messagesWrapRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const swipeStartYRef = useRef(0);
+
+  // Platform flags
+  const isIOS =
+    typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   // Stable session id per tab
   const sessionIdRef = useRef(null);
@@ -63,7 +68,7 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Dynamic viewport height (iOS/Android keyboards)
+  // Dynamic viewport height (baseline)
   useEffect(() => {
     const setVh = () => {
       document.documentElement.style.setProperty(
@@ -76,6 +81,47 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("resize", setVh);
   }, []);
 
+  // Android keyboard-aware sizing using visualViewport
+  useEffect(() => {
+    if (typeof window === "undefined" || !isMobile || !window.visualViewport)
+      return;
+
+    const vv = window.visualViewport;
+    const apply = () => {
+      document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
+      // how much bottom area is obscured (keyboard height)
+      const kbOffset = Math.max(
+        0,
+        window.innerHeight - (vv.height + vv.offsetTop)
+      );
+      document.documentElement.style.setProperty("--vv-bottom", `${kbOffset}px`);
+    };
+    apply();
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    return () => {
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+    };
+  }, [isMobile]);
+
+  // Keep last message visible while keyboard animates (if already near bottom)
+  useEffect(() => {
+    if (!isMobile || !window.visualViewport || !messagesWrapRef.current) return;
+    const el = messagesWrapRef.current;
+    const vv = window.visualViewport;
+    const isNearBottom = () =>
+      el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
+
+    const onVv = () => {
+      if (isNearBottom()) {
+        el.scrollTop = el.scrollHeight; // jump to prevent jank during animation
+      }
+    };
+    vv.addEventListener("resize", onVv);
+    return () => vv.removeEventListener("resize", onVv);
+  }, [isMobile]);
+
   // ---------------- SCROLL UTILS ----------------
   const nearBottom = () => {
     const el = messagesWrapRef.current;
@@ -84,6 +130,7 @@ export default function ChatbotWidget() {
     const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
     return distance <= threshold;
   };
+
   const scrollToBottom = (smooth = true) => {
     const el = messagesWrapRef.current;
     if (!el) return;
@@ -94,7 +141,7 @@ export default function ChatbotWidget() {
     }
   };
 
-  // Track user scroll to toggle autoScroll and pill
+  // Track user scrolling to toggle autoscroll & pill visibility
   useEffect(() => {
     const el = messagesWrapRef.current;
     if (!el) return;
@@ -113,13 +160,11 @@ export default function ChatbotWidget() {
   // Smart autoscroll on new messages
   useEffect(() => {
     if (autoScroll) {
-      // only snap down if user was already near bottom
       scrollToBottom(true);
     } else {
-      // user is reading up — show pill
       setShowNewMsgPill(true);
     }
-  }, [messages]); // runs after every message append
+  }, [messages]); // run after each message append
 
   // Close on ESC
   useEffect(() => {
@@ -208,7 +253,7 @@ export default function ChatbotWidget() {
     const text = input.trim();
     if (!text) return;
 
-    // if user is at bottom while sending, keep autoscroll true
+    // preserve autoscroll state based on current position
     setAutoScroll(nearBottom());
 
     const next = [...messages, { role: "user", content: text }];
@@ -233,7 +278,6 @@ export default function ChatbotWidget() {
       ]);
     } finally {
       setLoading(false);
-      // keep input visible & focused after send
       setTimeout(() => {
         if (autoScroll) scrollToBottom(true);
         inputRef.current?.focus();
@@ -261,10 +305,9 @@ export default function ChatbotWidget() {
           },
         ]);
       }
-      // open at bottom
+      // Only auto-focus on iOS; Android tends to raise keyboard before layout finishes
       setTimeout(() => {
-        scrollToBottom(false);
-        inputRef.current?.focus();
+        if (isIOS) inputRef.current?.focus();
       }, 0);
     }
   };
@@ -315,10 +358,14 @@ export default function ChatbotWidget() {
           aria-label="Website Builders America Chat"
           style={{
             position: "fixed",
-            bottom: isMobile ? 0 : "1rem",
+            // Anchor just above the keyboard on Android; normal offset on desktop
+            bottom: isMobile ? "var(--vv-bottom, 0px)" : "1rem",
             right: isMobile ? 0 : "1rem",
             width: isMobile ? "100%" : "360px",
-            height: isMobile ? "min(100dvh, calc(var(--vh) * 100))" : "520px",
+            // Prefer visible viewport height (vvh) -> 100dvh -> --vh fallback
+            height: isMobile
+              ? "var(--vvh, min(100dvh, calc(var(--vh) * 100)))"
+              : "520px",
             borderRadius: isMobile ? 0 : "12px",
             backgroundColor: "#fff",
             border: isMobile ? "none" : "1px solid #ccc",
@@ -471,6 +518,7 @@ export default function ChatbotWidget() {
               borderTop: "1px solid #e6e8eb",
               padding: "0.6rem",
               background: "#fafbfc",
+              // extra bottom inset for iPhone home indicator (0 on Android)
               paddingBottom: "calc(0.6rem + env(safe-area-inset-bottom))",
             }}
           >
@@ -495,7 +543,7 @@ export default function ChatbotWidget() {
                 flex: 1,
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
-                border: "1px solid #d6dbe1",
+                border: "1px solid "#d6dbe1",
                 fontSize: "16px", // prevents iOS zoom; fine on Android
                 outline: "none",
                 background: "#fff",
