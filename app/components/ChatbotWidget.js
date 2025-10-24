@@ -2,13 +2,17 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function ChatbotWidget() {
+  // UI state
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Refs
   const messagesEndRef = useRef(null);
   const widgetRef = useRef(null);
+  const headerRef = useRef(null); // for swipe-down on mobile
+  const swipeStartYRef = useRef(0);
 
   // ---- Stable sessionId for this tab ----
   const sessionIdRef = useRef(null);
@@ -43,6 +47,19 @@ export default function ChatbotWidget() {
     }
   };
 
+  // ---- Responsive (mobile vs desktop) ----
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 480 : false
+  );
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   // ---- Effects ----
   // Scroll on new messages
   useEffect(() => {
@@ -62,13 +79,14 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, messages]);
 
-  // Close when clicking outside the widget
+  // Close when clicking outside the widget (desktop use)
   useEffect(() => {
     const handleClickOutside = async (e) => {
       if (
         isOpen &&
         widgetRef.current &&
-        !widgetRef.current.contains(e.target)
+        !widgetRef.current.contains(e.target) &&
+        !isMobile // on mobile it’s full-screen, so no outside area
       ) {
         await finalizeLead();
         setIsOpen(false);
@@ -76,7 +94,7 @@ export default function ChatbotWidget() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, messages]);
+  }, [isOpen, messages, isMobile]);
 
   // Finalize on page unload (best-effort)
   useEffect(() => {
@@ -161,6 +179,33 @@ export default function ChatbotWidget() {
     setIsOpen(false);
   };
 
+  // ---- Swipe-down to close (mobile polish) ----
+  useEffect(() => {
+    if (!isOpen || !isMobile || !headerRef.current) return;
+
+    const onStart = (e) => {
+      swipeStartYRef.current =
+        (e.touches && e.touches[0]?.clientY) || e.clientY || 0;
+    };
+    const onEnd = async (e) => {
+      const endY =
+        (e.changedTouches && e.changedTouches[0]?.clientY) || e.clientY || 0;
+      if (endY - swipeStartYRef.current > 100) {
+        await finalizeLead();
+        setIsOpen(false);
+      }
+    };
+
+    const headerEl = headerRef.current;
+    headerEl.addEventListener("touchstart", onStart);
+    headerEl.addEventListener("touchend", onEnd);
+
+    return () => {
+      headerEl.removeEventListener("touchstart", onStart);
+      headerEl.removeEventListener("touchend", onEnd);
+    };
+  }, [isOpen, isMobile]);
+
   // ---- UI ----
   return (
     <>
@@ -200,26 +245,29 @@ export default function ChatbotWidget() {
           aria-label="Website Builders America Chat"
           style={{
             position: "fixed",
-            bottom: "6rem",
-            right: "1rem",
-            width: "360px",
-            height: "520px",
+            bottom: isMobile ? 0 : "6rem",
+            right: isMobile ? 0 : "1rem",
+            width: isMobile ? "100%" : "360px",
+            height: isMobile ? "100%" : "520px",
+            borderRadius: isMobile ? 0 : "12px",
             backgroundColor: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "12px",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+            border: isMobile ? "none" : "1px solid #ccc",
+            boxShadow: isMobile
+              ? "0 0 0 rgba(0,0,0,0)"
+              : "0 6px 18px rgba(0,0,0,0.25)",
             zIndex: 10000,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             fontFamily:
               'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-            fontSize: "1.15rem", // 👈 Base size for everything inside
+            fontSize: "1.15rem", // base size
             lineHeight: 1.5,
           }}
         >
-          {/* Header */}
+          {/* Header (draggable area for swipe-down on mobile) */}
           <div
+            ref={headerRef}
             style={{
               display: "flex",
               alignItems: "center",
@@ -227,6 +275,7 @@ export default function ChatbotWidget() {
               padding: "0.6rem 0.9rem",
               borderBottom: "1px solid #eee",
               background: "#f7f9fb",
+              touchAction: "pan-y",
             }}
           >
             <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>
@@ -276,7 +325,7 @@ export default function ChatbotWidget() {
                     fontSize:
                       typeof window !== "undefined" && window.innerWidth > 768
                         ? "1.25rem"
-                        : "1.1rem", // 👈 bigger message text
+                        : "1.1rem",
                     lineHeight: 1.45,
                     maxWidth: "80%",
                     wordBreak: "break-word",
@@ -297,7 +346,7 @@ export default function ChatbotWidget() {
                   textAlign: "left",
                   fontStyle: "italic",
                   color: "#666",
-                  fontSize: "1.05rem", // slightly larger
+                  fontSize: "1.05rem",
                 }}
               >
                 Assistant is typing...
@@ -323,9 +372,7 @@ export default function ChatbotWidget() {
                 setInput(e.target.value);
                 finalizedRef.current = false; // user active again
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage();
-              }}
+              onKeyDown={handleKeyPress}
               placeholder="Type your message..."
               aria-label="Type your message"
               style={{
@@ -333,7 +380,7 @@ export default function ChatbotWidget() {
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
                 border: "1px solid #d6dbe1",
-                fontSize: "1.15rem", // 👈 larger input text
+                fontSize: "1.15rem",
                 outline: "none",
                 background: "#fff",
               }}
@@ -347,7 +394,7 @@ export default function ChatbotWidget() {
                 backgroundColor: "#26baee",
                 color: "#fff",
                 cursor: "pointer",
-                fontSize: "1.1rem", // 👈 larger button text
+                fontSize: "1.1rem",
                 fontWeight: 600,
                 boxShadow: "0 2px 10px rgba(38,186,238,0.25)",
               }}
