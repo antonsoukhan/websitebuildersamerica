@@ -8,9 +8,14 @@ export default function ChatbotWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Smart autoscroll state
+  const [autoScroll, setAutoScroll] = useState(true); // true when user is near bottom
+  const [showNewMsgPill, setShowNewMsgPill] = useState(false);
+
   // ---------------- REFS ----------------
   const widgetRef = useRef(null);
   const headerRef = useRef(null);
+  const messagesWrapRef = useRef(null); // <---- scroll container
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const swipeStartYRef = useRef(0);
@@ -71,11 +76,50 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("resize", setVh);
   }, []);
 
-  // ---------------- EFFECTS ----------------
-  // Auto-scroll to latest message
+  // ---------------- SCROLL UTILS ----------------
+  const nearBottom = () => {
+    const el = messagesWrapRef.current;
+    if (!el) return true;
+    const threshold = 80; // px from bottom counts as "at bottom"
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    return distance <= threshold;
+  };
+  const scrollToBottom = (smooth = true) => {
+    const el = messagesWrapRef.current;
+    if (!el) return;
+    if (smooth) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    } else {
+      el.scrollTop = el.scrollHeight;
+    }
+  };
+
+  // Track user scroll to toggle autoScroll and pill
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const el = messagesWrapRef.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      const atBottom = nearBottom();
+      setAutoScroll(atBottom);
+      if (atBottom) setShowNewMsgPill(false);
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // ---------------- EFFECTS ----------------
+  // Smart autoscroll on new messages
+  useEffect(() => {
+    if (autoScroll) {
+      // only snap down if user was already near bottom
+      scrollToBottom(true);
+    } else {
+      // user is reading up — show pill
+      setShowNewMsgPill(true);
+    }
+  }, [messages]); // runs after every message append
 
   // Close on ESC
   useEffect(() => {
@@ -164,6 +208,9 @@ export default function ChatbotWidget() {
     const text = input.trim();
     if (!text) return;
 
+    // if user is at bottom while sending, keep autoscroll true
+    setAutoScroll(nearBottom());
+
     const next = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
@@ -188,7 +235,7 @@ export default function ChatbotWidget() {
       setLoading(false);
       // keep input visible & focused after send
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (autoScroll) scrollToBottom(true);
         inputRef.current?.focus();
       }, 0);
     }
@@ -214,8 +261,11 @@ export default function ChatbotWidget() {
           },
         ]);
       }
-      // focus input shortly after opening
-      setTimeout(() => inputRef.current?.focus(), 0);
+      // open at bottom
+      setTimeout(() => {
+        scrollToBottom(false);
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -234,7 +284,7 @@ export default function ChatbotWidget() {
             position: "fixed",
             bottom: "1rem",
             right: "1rem",
-            zIndex: 10000, // bubble under widget
+            zIndex: 10000,
           }}
         >
           <button
@@ -268,8 +318,6 @@ export default function ChatbotWidget() {
             bottom: isMobile ? 0 : "1rem",
             right: isMobile ? 0 : "1rem",
             width: isMobile ? "100%" : "360px",
-            // Robust height for mobile keyboards across iOS/Android:
-            // Prefer 100dvh; fall back to our --vh variable.
             height: isMobile ? "min(100dvh, calc(var(--vh) * 100))" : "520px",
             borderRadius: isMobile ? 0 : "12px",
             backgroundColor: "#fff",
@@ -277,7 +325,7 @@ export default function ChatbotWidget() {
             boxShadow: isMobile
               ? "0 0 0 rgba(0,0,0,0)"
               : "0 6px 18px rgba(0,0,0,0.25)",
-            zIndex: 10002, // widget above bubble
+            zIndex: 10002,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
@@ -322,13 +370,16 @@ export default function ChatbotWidget() {
 
           {/* Messages */}
           <div
+            ref={messagesWrapRef}
             style={{
+              position: "relative",
               flex: 1,
               padding: "1rem",
               overflowY: "auto",
               background: "#fff",
               WebkitOverflowScrolling: "touch", // iOS smooth scroll
               scrollPaddingBottom: "80px", // keep last bubble visible above keyboard
+              overscrollBehavior: "contain", // reduces Android snap
             }}
           >
             {messages.map((m, i) => (
@@ -378,18 +429,48 @@ export default function ChatbotWidget() {
             )}
 
             <div ref={messagesEndRef} />
+
+            {/* "New message" pill */}
+            {showNewMsgPill && (
+              <button
+                onClick={() => {
+                  setShowNewMsgPill(false);
+                  setAutoScroll(true);
+                  scrollToBottom(true);
+                }}
+                style={{
+                  position: "sticky",
+                  bottom: 8,
+                  display: "inline-block",
+                  margin: "0 auto",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  padding: "0.35rem 0.7rem",
+                  borderRadius: "999px",
+                  border: "1px solid #d6dbe1",
+                  background: "#fff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  fontSize: "0.9rem",
+                  cursor: "pointer",
+                }}
+              >
+                New message ↓
+              </button>
+            )}
           </div>
 
           {/* Input bar — form submit works great on iOS/Android */}
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
             style={{
               display: "flex",
               gap: "0.5rem",
               borderTop: "1px solid #e6e8eb",
               padding: "0.6rem",
               background: "#fafbfc",
-              // extra bottom inset for iPhone home indicator (0 on Android)
               paddingBottom: "calc(0.6rem + env(safe-area-inset-bottom))",
             }}
           >
@@ -398,7 +479,7 @@ export default function ChatbotWidget() {
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
-                finalizedRef.current = false; // user active again
+                finalizedRef.current = false;
               }}
               placeholder="Type your message…"
               aria-label="Type your message"
@@ -406,12 +487,16 @@ export default function ChatbotWidget() {
               enterKeyHint="send"
               autoCapitalize="sentences"
               autoCorrect="on"
+              onFocus={() => {
+                // If they focus while already at bottom, keep autoscroll on
+                setAutoScroll(nearBottom());
+              }}
               style={{
                 flex: 1,
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
                 border: "1px solid #d6dbe1",
-                fontSize: "16px", // >=16px to prevent iOS zoom
+                fontSize: "16px", // prevents iOS zoom; fine on Android
                 outline: "none",
                 background: "#fff",
               }}
