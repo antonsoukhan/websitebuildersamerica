@@ -7,8 +7,9 @@ export default function ChatbotWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const widgetRef = useRef(null); // 👈 reference to the entire chat window
 
-  // Stable sessionId per tab
+  // Stable sessionId
   const sessionIdRef = useRef(null);
   if (!sessionIdRef.current) {
     sessionIdRef.current =
@@ -17,7 +18,7 @@ export default function ChatbotWidget() {
   }
   const sessionId = sessionIdRef.current;
 
-  // Helper: POST to API
+  // POST helper
   const postChat = async (body) => {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -28,7 +29,7 @@ export default function ChatbotWidget() {
     return res.json();
   };
 
-  // Finalize (email full transcript on close)
+  // Finalize (emails full transcript)
   const finalizedRef = useRef(false);
   const finalizeLead = async () => {
     if (finalizedRef.current) return;
@@ -41,12 +42,12 @@ export default function ChatbotWidget() {
     }
   };
 
-  // Scroll on new messages
+  // Scroll to bottom when new messages appear
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Close on ESC
+  // Close on ESC key
   useEffect(() => {
     const onKey = async (e) => {
       if (!isOpen) return;
@@ -57,6 +58,22 @@ export default function ChatbotWidget() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, messages]);
+
+  // Close when clicking outside the chat widget
+  useEffect(() => {
+    const handleClickOutside = async (e) => {
+      if (
+        isOpen &&
+        widgetRef.current &&
+        !widgetRef.current.contains(e.target)
+      ) {
+        await finalizeLead();
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, messages]);
 
   // Finalize on page unload
@@ -78,7 +95,7 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [messages, sessionId]);
 
-  // Optional: auto-finalize after 60s inactivity while open
+  // Optional: auto-finalize after 60s inactivity
   useEffect(() => {
     if (!isOpen) return;
     const t = setTimeout(() => finalizeLead(), 60000);
@@ -88,12 +105,11 @@ export default function ChatbotWidget() {
   const sendMessage = async () => {
     const text = input.trim();
     if (!text) return;
-
     const next = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
     setLoading(true);
-    finalizedRef.current = false; // user continued chat
+    finalizedRef.current = false;
 
     try {
       const data = await postChat({
@@ -118,7 +134,6 @@ export default function ChatbotWidget() {
     if (e.key === "Enter") sendMessage();
   };
 
-  // Toggle open: finalize + close when already open
   const toggleOpen = async () => {
     if (isOpen) {
       await finalizeLead();
@@ -137,7 +152,6 @@ export default function ChatbotWidget() {
     }
   };
 
-  // Header close handler (X button)
   const handleCloseClick = async () => {
     await finalizeLead();
     setIsOpen(false);
@@ -147,7 +161,6 @@ export default function ChatbotWidget() {
     <>
       {/* Floating Bubble */}
       <div
-        className="floating-chatbot-button"
         style={{
           position: "fixed",
           bottom: "1rem",
@@ -176,9 +189,7 @@ export default function ChatbotWidget() {
       {/* Chat Widget */}
       {isOpen && (
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Website Builders America Chat"
+          ref={widgetRef}
           style={{
             position: "fixed",
             bottom: "6rem",
@@ -196,7 +207,7 @@ export default function ChatbotWidget() {
             fontFamily: "Arial, sans-serif",
           }}
         >
-          {/* Header with title + close (X) */}
+          {/* Header */}
           <div
             style={{
               display: "flex",
