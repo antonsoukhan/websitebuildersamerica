@@ -209,32 +209,35 @@ export default function ChatbotWidget() {
   // ---- UI ----
   return (
     <>
-      {/* Floating Bubble */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: "1rem",
-          right: "1rem",
-          zIndex: 10001,
-        }}
-      >
-        <button
-          onClick={toggleOpen}
-          aria-label={isOpen ? "Close Chatbot" : "Open Chatbot"}
+      {/* Floating Bubble — hide when open */}
+      {!isOpen && (
+        <div
           style={{
-            fontSize: "2rem",
-            width: "3.6rem",
-            height: "3.6rem",
-            borderRadius: "50%",
-            backgroundColor: "#26baee",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
+            position: "fixed",
+            bottom: "1rem",
+            right: "1rem",
+            zIndex: 10000, // bubble lower than widget
+            pointerEvents: "auto",
           }}
         >
-          💬
-        </button>
-      </div>
+          <button
+            onClick={toggleOpen}
+            aria-label="Open Chatbot"
+            style={{
+              fontSize: "2rem",
+              width: "3.6rem",
+              height: "3.6rem",
+              borderRadius: "50%",
+              backgroundColor: "#26baee",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            💬
+          </button>
+        </div>
+      )}
 
       {/* Chat Widget */}
       {isOpen && (
@@ -245,7 +248,7 @@ export default function ChatbotWidget() {
           aria-label="Website Builders America Chat"
           style={{
             position: "fixed",
-            bottom: isMobile ? 0 : "6rem",
+            bottom: isMobile ? 0 : "1rem",
             right: isMobile ? 0 : "1rem",
             width: isMobile ? "100%" : "360px",
             height: isMobile ? "100%" : "520px",
@@ -255,13 +258,13 @@ export default function ChatbotWidget() {
             boxShadow: isMobile
               ? "0 0 0 rgba(0,0,0,0)"
               : "0 6px 18px rgba(0,0,0,0.25)",
-            zIndex: 10000,
+            zIndex: 10002, // widget above bubble
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
             fontFamily:
               'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-            fontSize: "1.15rem", // base size
+            fontSize: "1.15rem",
             lineHeight: 1.5,
           }}
         >
