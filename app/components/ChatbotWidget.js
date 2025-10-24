@@ -94,7 +94,10 @@ export default function ChatbotWidget() {
         0,
         window.innerHeight - (vv.height + vv.offsetTop)
       );
-      document.documentElement.style.setProperty("--vv-bottom", `${kbOffset}px`);
+      document.documentElement.style.setProperty(
+        "--vv-bottom",
+        `${kbOffset}px`
+      );
     };
     apply();
     vv.addEventListener("resize", apply);
@@ -543,7 +546,7 @@ export default function ChatbotWidget() {
                 flex: 1,
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
-                border: "1px solid "#d6dbe1",
+                border: "1px solid #d6dbe1",
                 fontSize: "16px", // prevents iOS zoom; fine on Android
                 outline: "none",
                 background: "#fff",
