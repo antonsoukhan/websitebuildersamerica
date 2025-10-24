@@ -6,10 +6,11 @@ export default function ChatbotWidget() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  const widgetRef = useRef(null); // 👈 reference to the entire chat window
 
-  // Stable sessionId
+  const messagesEndRef = useRef(null);
+  const widgetRef = useRef(null);
+
+  // ---- Stable sessionId for this tab ----
   const sessionIdRef = useRef(null);
   if (!sessionIdRef.current) {
     sessionIdRef.current =
@@ -18,7 +19,7 @@ export default function ChatbotWidget() {
   }
   const sessionId = sessionIdRef.current;
 
-  // POST helper
+  // ---- Helpers ----
   const postChat = async (body) => {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -29,7 +30,7 @@ export default function ChatbotWidget() {
     return res.json();
   };
 
-  // Finalize (emails full transcript)
+  // Finalize (emails full transcript server-side)
   const finalizedRef = useRef(false);
   const finalizeLead = async () => {
     if (finalizedRef.current) return;
@@ -42,12 +43,13 @@ export default function ChatbotWidget() {
     }
   };
 
-  // Scroll to bottom when new messages appear
+  // ---- Effects ----
+  // Scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Close on ESC key
+  // Close on ESC
   useEffect(() => {
     const onKey = async (e) => {
       if (!isOpen) return;
@@ -60,7 +62,7 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, messages]);
 
-  // Close when clicking outside the chat widget
+  // Close when clicking outside the widget
   useEffect(() => {
     const handleClickOutside = async (e) => {
       if (
@@ -76,7 +78,7 @@ export default function ChatbotWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, messages]);
 
-  // Finalize on page unload
+  // Finalize on page unload (best-effort)
   useEffect(() => {
     const handler = () => {
       try {
@@ -95,21 +97,23 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [messages, sessionId]);
 
-  // Optional: auto-finalize after 60s inactivity
+  // Optional: auto-finalize after inactivity (60s)
   useEffect(() => {
     if (!isOpen) return;
-    const t = setTimeout(() => finalizeLead(), 60000);
+    const t = setTimeout(() => finalizeLead(), 60_000);
     return () => clearTimeout(t);
   }, [messages, isOpen]);
 
+  // ---- Actions ----
   const sendMessage = async () => {
     const text = input.trim();
     if (!text) return;
+
     const next = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
     setLoading(true);
-    finalizedRef.current = false;
+    finalizedRef.current = false; // chat continued; allow future finalize
 
     try {
       const data = await postChat({
@@ -157,6 +161,7 @@ export default function ChatbotWidget() {
     setIsOpen(false);
   };
 
+  // ---- UI ----
   return (
     <>
       {/* Floating Bubble */}
@@ -190,21 +195,27 @@ export default function ChatbotWidget() {
       {isOpen && (
         <div
           ref={widgetRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Website Builders America Chat"
           style={{
             position: "fixed",
             bottom: "6rem",
             right: "1rem",
-            width: "350px",
-            height: "500px",
+            width: "360px",
+            height: "520px",
             backgroundColor: "#fff",
             border: "1px solid #ccc",
-            borderRadius: "10px",
-            boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
+            borderRadius: "12px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
             zIndex: 10000,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            fontFamily: "Arial, sans-serif",
+            fontFamily:
+              'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
+            fontSize: "1.15rem", // 👈 Base size for everything inside
+            lineHeight: 1.5,
           }}
         >
           {/* Header */}
@@ -213,12 +224,12 @@ export default function ChatbotWidget() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "0.5rem 0.75rem",
+              padding: "0.6rem 0.9rem",
               borderBottom: "1px solid #eee",
-              background: "#f9f9f9",
+              background: "#f7f9fb",
             }}
           >
-            <div style={{ fontWeight: 600 }}>
+            <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>
               Chat with Website Builders America
             </div>
             <button
@@ -228,9 +239,10 @@ export default function ChatbotWidget() {
               style={{
                 background: "transparent",
                 border: "none",
-                fontSize: "1.25rem",
+                fontSize: "1.6rem",
                 cursor: "pointer",
                 lineHeight: 1,
+                color: "#333",
               }}
             >
               ×
@@ -243,48 +255,55 @@ export default function ChatbotWidget() {
               flex: 1,
               padding: "1rem",
               overflowY: "auto",
+              background: "#fff",
             }}
           >
             {messages.map((m, i) => (
               <div
                 key={i}
                 style={{
-                  marginBottom: "0.5rem",
+                  marginBottom: "0.6rem",
                   textAlign: m.role === "user" ? "right" : "left",
                 }}
               >
                 <span
                   style={{
                     display: "inline-block",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "10px",
-                    backgroundColor: m.role === "user" ? "#26baee" : "#eee",
-                    color: m.role === "user" ? "#fff" : "#000",
+                    padding: "0.6rem 0.85rem",
+                    borderRadius: "12px",
+                    backgroundColor: m.role === "user" ? "#26baee" : "#eef2f6",
+                    color: m.role === "user" ? "#fff" : "#111",
                     fontSize:
                       typeof window !== "undefined" && window.innerWidth > 768
-                        ? "1.1rem"
-                        : "0.95rem",
-                    lineHeight: "1.4",
+                        ? "1.25rem"
+                        : "1.1rem", // 👈 bigger message text
+                    lineHeight: 1.45,
                     maxWidth: "80%",
                     wordBreak: "break-word",
+                    boxShadow:
+                      m.role === "user"
+                        ? "0 2px 8px rgba(38,186,238,0.25)"
+                        : "0 2px 8px rgba(0,0,0,0.06)",
                   }}
                 >
                   {m.content}
                 </span>
               </div>
             ))}
+
             {loading && (
               <div
                 style={{
                   textAlign: "left",
                   fontStyle: "italic",
                   color: "#666",
-                  fontSize: "0.9rem",
+                  fontSize: "1.05rem", // slightly larger
                 }}
               >
                 Assistant is typing...
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -292,37 +311,45 @@ export default function ChatbotWidget() {
           <div
             style={{
               display: "flex",
-              borderTop: "1px solid #ccc",
-              padding: "0.5rem",
+              gap: "0.5rem",
+              borderTop: "1px solid #e6e8eb",
+              padding: "0.6rem",
+              background: "#fafbfc",
             }}
           >
             <input
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
-                finalizedRef.current = false;
+                finalizedRef.current = false; // user active again
               }}
-              onKeyDown={handleKeyPress}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendMessage();
+              }}
               placeholder="Type your message..."
+              aria-label="Type your message"
               style={{
                 flex: 1,
-                padding: "0.5rem",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
+                padding: "0.65rem 0.75rem",
+                borderRadius: "10px",
+                border: "1px solid #d6dbe1",
+                fontSize: "1.15rem", // 👈 larger input text
+                outline: "none",
+                background: "#fff",
               }}
             />
             <button
               onClick={sendMessage}
               style={{
-                marginLeft: "0.5rem",
-                padding: "0.5rem 1rem",
-                borderRadius: "5px",
+                padding: "0.6rem 1rem",
+                borderRadius: "10px",
                 border: "none",
                 backgroundColor: "#26baee",
                 color: "#fff",
                 cursor: "pointer",
-                fontSize: "1rem",
+                fontSize: "1.1rem", // 👈 larger button text
+                fontWeight: 600,
+                boxShadow: "0 2px 10px rgba(38,186,238,0.25)",
               }}
             >
               Send
