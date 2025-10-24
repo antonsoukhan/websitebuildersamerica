@@ -1,8 +1,8 @@
 // app/layout.js
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
 import Script from "next/script";
+import ChatbotWidget from "./components/ChatbotWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +34,29 @@ export default function RootLayout({ children }) {
         />
         {/* Phosphor Icons */}
         <script src="https://unpkg.com/phosphor-icons" defer></script>
+
+        {/* Tiny global style to keep floating buttons clear of the chatbot bubble */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              .floating-button-group {
+                position: fixed;
+                bottom: 1rem;
+                right: 5.2rem;        /* 3.6rem bubble + ~0.6rem gap + extra breathing room */
+                z-index: 9000;        /* below chat bubble (10001) but above page content */
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+              }
+              @media (max-width: 480px) {
+                .floating-button-group {
+                  right: 1rem;
+                  bottom: 6rem;       /* stack above the bubble on small screens */
+                }
+              }
+            `,
+          }}
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {/* Google Tag Manager (noscript fallback) */}
@@ -43,7 +66,7 @@ export default function RootLayout({ children }) {
             height="0"
             width="0"
             style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
+          />
         </noscript>
 
         {/* Google Analytics + Conversion Tracking */}
@@ -78,8 +101,7 @@ export default function RootLayout({ children }) {
 
         {children}
 
-        {/* Global Call Button */}
-
+        {/* Global Floating Buttons (now offset so they don't overlap the chat bubble) */}
         <div className="floating-button-group">
           {/* Messenger */}
           <a
@@ -116,9 +138,12 @@ export default function RootLayout({ children }) {
             <i
               className="ph ph-phone"
               style={{ fontSize: "3.6rem", color: "#26baee" }}
-            ></i>
+            />
           </a>
         </div>
+
+        {/* Chatbot (bubble stays at bottom-right; z-index 10001 in the component) */}
+        <ChatbotWidget />
       </body>
     </html>
   );

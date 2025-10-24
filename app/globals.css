@@ -1924,3 +1924,96 @@ body {
   max-width: 700px;
   color: #333;
 }
+.floating-chatbot-button button {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: none;
+  background-color: #26baee;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.floating-chatbot-button button:hover {
+  background-color: #1b8dc4;
+}
+.floating-chatbot-button {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 10000;
+}
+
+.floating-chatbot-button button {
+  background-color: #26baee;
+  border: none;
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s;
+}
+
+.floating-chatbot-button button:hover {
+  background-color: #1a91c9;
+}
+.chat-widget {
+  position: fixed;
+  bottom: 6rem;
+  right: 1rem;
+  width: 350px;
+  height: 500px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-widget .messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.chat-widget .messages .user {
+  text-align: right;
+  margin: 0.5rem 0;
+}
+
+.chat-widget .messages .assistant {
+  text-align: left;
+  margin: 0.5rem 0;
+}
+
+.chat-widget .input-box {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+
+.chat-widget input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  outline: none;
+}
+
+.chat-widget button {
+  background: #26baee;
+  border: none;
+  color: white;
+  padding: 0 1rem;
+  cursor: pointer;
+}
