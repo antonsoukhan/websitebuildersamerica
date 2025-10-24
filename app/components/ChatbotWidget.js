@@ -1,20 +1,21 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ChatbotWidget() {
-  // UI state
+  // ---------------- UI STATE ----------------
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Refs
-  const messagesEndRef = useRef(null);
+  // ---------------- REFS ----------------
   const widgetRef = useRef(null);
-  const headerRef = useRef(null); // for swipe-down on mobile
+  const headerRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
   const swipeStartYRef = useRef(0);
 
-  // ---- Stable sessionId for this tab ----
+  // Stable session id per tab
   const sessionIdRef = useRef(null);
   if (!sessionIdRef.current) {
     sessionIdRef.current =
@@ -23,7 +24,7 @@ export default function ChatbotWidget() {
   }
   const sessionId = sessionIdRef.current;
 
-  // ---- Helpers ----
+  // ---------------- HELPERS ----------------
   const postChat = async (body) => {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -34,7 +35,7 @@ export default function ChatbotWidget() {
     return res.json();
   };
 
-  // Finalize (emails full transcript server-side)
+  // Email full transcript once per session end
   const finalizedRef = useRef(false);
   const finalizeLead = async () => {
     if (finalizedRef.current) return;
@@ -47,21 +48,31 @@ export default function ChatbotWidget() {
     }
   };
 
-  // ---- Responsive (mobile vs desktop) ----
+  // ---------------- RESPONSIVE ----------------
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth <= 480 : false
   );
-
   useEffect(() => {
-    const onResize = () => {
-      setIsMobile(window.innerWidth <= 480);
-    };
+    const onResize = () => setIsMobile(window.innerWidth <= 480);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // ---- Effects ----
-  // Scroll on new messages
+  // Dynamic viewport height (iOS/Android keyboards)
+  useEffect(() => {
+    const setVh = () => {
+      document.documentElement.style.setProperty(
+        "--vh",
+        `${window.innerHeight * 0.01}px`
+      );
+    };
+    setVh();
+    window.addEventListener("resize", setVh);
+    return () => window.removeEventListener("resize", setVh);
+  }, []);
+
+  // ---------------- EFFECTS ----------------
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -79,14 +90,14 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, messages]);
 
-  // Close when clicking outside the widget (desktop use)
+  // Close on outside click (desktop only)
   useEffect(() => {
     const handleClickOutside = async (e) => {
       if (
         isOpen &&
         widgetRef.current &&
         !widgetRef.current.contains(e.target) &&
-        !isMobile // on mobile it’s full-screen, so no outside area
+        !isMobile
       ) {
         await finalizeLead();
         setIsOpen(false);
@@ -96,7 +107,7 @@ export default function ChatbotWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, messages, isMobile]);
 
-  // Finalize on page unload (best-effort)
+  // Best-effort finalize on page unload
   useEffect(() => {
     const handler = () => {
       try {
@@ -115,14 +126,40 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [messages, sessionId]);
 
-  // Optional: auto-finalize after inactivity (60s)
+  // Auto-finalize after 60s inactivity while open
   useEffect(() => {
     if (!isOpen) return;
     const t = setTimeout(() => finalizeLead(), 60_000);
     return () => clearTimeout(t);
   }, [messages, isOpen]);
 
-  // ---- Actions ----
+  // Swipe down to close (mobile polish)
+  useEffect(() => {
+    if (!isOpen || !isMobile || !headerRef.current) return;
+
+    const onStart = (e) => {
+      swipeStartYRef.current =
+        (e.touches && e.touches[0]?.clientY) || e.clientY || 0;
+    };
+    const onEnd = async (e) => {
+      const endY =
+        (e.changedTouches && e.changedTouches[0]?.clientY) || e.clientY || 0;
+      if (endY - swipeStartYRef.current > 100) {
+        await finalizeLead();
+        setIsOpen(false);
+      }
+    };
+
+    const el = headerRef.current;
+    el.addEventListener("touchstart", onStart);
+    el.addEventListener("touchend", onEnd);
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [isOpen, isMobile]);
+
+  // ---------------- ACTIONS ----------------
   const sendMessage = async () => {
     const text = input.trim();
     if (!text) return;
@@ -131,7 +168,7 @@ export default function ChatbotWidget() {
     setMessages(next);
     setInput("");
     setLoading(true);
-    finalizedRef.current = false; // chat continued; allow future finalize
+    finalizedRef.current = false;
 
     try {
       const data = await postChat({
@@ -149,11 +186,17 @@ export default function ChatbotWidget() {
       ]);
     } finally {
       setLoading(false);
+      // keep input visible & focused after send
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") sendMessage();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    sendMessage();
   };
 
   const toggleOpen = async () => {
@@ -171,6 +214,8 @@ export default function ChatbotWidget() {
           },
         ]);
       }
+      // focus input shortly after opening
+      setTimeout(() => inputRef.current?.focus(), 0);
     }
   };
 
@@ -179,45 +224,17 @@ export default function ChatbotWidget() {
     setIsOpen(false);
   };
 
-  // ---- Swipe-down to close (mobile polish) ----
-  useEffect(() => {
-    if (!isOpen || !isMobile || !headerRef.current) return;
-
-    const onStart = (e) => {
-      swipeStartYRef.current =
-        (e.touches && e.touches[0]?.clientY) || e.clientY || 0;
-    };
-    const onEnd = async (e) => {
-      const endY =
-        (e.changedTouches && e.changedTouches[0]?.clientY) || e.clientY || 0;
-      if (endY - swipeStartYRef.current > 100) {
-        await finalizeLead();
-        setIsOpen(false);
-      }
-    };
-
-    const headerEl = headerRef.current;
-    headerEl.addEventListener("touchstart", onStart);
-    headerEl.addEventListener("touchend", onEnd);
-
-    return () => {
-      headerEl.removeEventListener("touchstart", onStart);
-      headerEl.removeEventListener("touchend", onEnd);
-    };
-  }, [isOpen, isMobile]);
-
-  // ---- UI ----
+  // ---------------- UI ----------------
   return (
     <>
-      {/* Floating Bubble — hide when open */}
+      {/* Floating bubble — hidden when open to avoid overlap */}
       {!isOpen && (
         <div
           style={{
             position: "fixed",
             bottom: "1rem",
             right: "1rem",
-            zIndex: 10000, // bubble lower than widget
-            pointerEvents: "auto",
+            zIndex: 10000, // bubble under widget
           }}
         >
           <button
@@ -239,7 +256,7 @@ export default function ChatbotWidget() {
         </div>
       )}
 
-      {/* Chat Widget */}
+      {/* Chat widget */}
       {isOpen && (
         <div
           ref={widgetRef}
@@ -251,7 +268,9 @@ export default function ChatbotWidget() {
             bottom: isMobile ? 0 : "1rem",
             right: isMobile ? 0 : "1rem",
             width: isMobile ? "100%" : "360px",
-            height: isMobile ? "100%" : "520px",
+            // Robust height for mobile keyboards across iOS/Android:
+            // Prefer 100dvh; fall back to our --vh variable.
+            height: isMobile ? "min(100dvh, calc(var(--vh) * 100))" : "520px",
             borderRadius: isMobile ? 0 : "12px",
             backgroundColor: "#fff",
             border: isMobile ? "none" : "1px solid #ccc",
@@ -268,7 +287,7 @@ export default function ChatbotWidget() {
             lineHeight: 1.5,
           }}
         >
-          {/* Header (draggable area for swipe-down on mobile) */}
+          {/* Header (also swipe area on mobile) */}
           <div
             ref={headerRef}
             style={{
@@ -308,6 +327,8 @@ export default function ChatbotWidget() {
               padding: "1rem",
               overflowY: "auto",
               background: "#fff",
+              WebkitOverflowScrolling: "touch", // iOS smooth scroll
+              scrollPaddingBottom: "80px", // keep last bubble visible above keyboard
             }}
           >
             {messages.map((m, i) => (
@@ -359,37 +380,44 @@ export default function ChatbotWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div
+          {/* Input bar — form submit works great on iOS/Android */}
+          <form
+            onSubmit={handleSubmit}
             style={{
               display: "flex",
               gap: "0.5rem",
               borderTop: "1px solid #e6e8eb",
               padding: "0.6rem",
               background: "#fafbfc",
+              // extra bottom inset for iPhone home indicator (0 on Android)
+              paddingBottom: "calc(0.6rem + env(safe-area-inset-bottom))",
             }}
           >
             <input
+              ref={inputRef}
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
                 finalizedRef.current = false; // user active again
               }}
-              onKeyDown={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder="Type your message…"
               aria-label="Type your message"
+              inputMode="text"
+              enterKeyHint="send"
+              autoCapitalize="sentences"
+              autoCorrect="on"
               style={{
                 flex: 1,
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
                 border: "1px solid #d6dbe1",
-                fontSize: "1.15rem",
+                fontSize: "16px", // >=16px to prevent iOS zoom
                 outline: "none",
                 background: "#fff",
               }}
             />
             <button
-              onClick={sendMessage}
+              type="submit"
               style={{
                 padding: "0.6rem 1rem",
                 borderRadius: "10px",
@@ -404,7 +432,7 @@ export default function ChatbotWidget() {
             >
               Send
             </button>
-          </div>
+          </form>
         </div>
       )}
     </>
