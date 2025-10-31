@@ -9,7 +9,7 @@ export default function ChatbotWidget() {
   const [loading, setLoading] = useState(false);
 
   // Smart autoscroll state
-  const [autoScroll, setAutoScroll] = useState(true); // true when user is near bottom
+  const [autoScroll, setAutoScroll] = useState(true);
   const [showNewMsgPill, setShowNewMsgPill] = useState(false);
 
   // ---------------- REFS ----------------
@@ -45,12 +45,15 @@ export default function ChatbotWidget() {
     return res.json();
   };
 
+  const hasUserSpoken = () => messages.some((m) => m.role === "user");
+
   // Email full transcript once per session end
   const finalizedRef = useRef(false);
   const finalizeLead = async () => {
-    if (finalizedRef.current) return;
+    // 👇 Do nothing if nobody typed
+    if (finalizedRef.current || !hasUserSpoken()) return;
     try {
-      await postChat({ sessionId, finalize: true, conversation: messages });
+      await postChat({ sessionId, finalize: true });
     } catch (e) {
       console.error("Finalize error:", e);
     } finally {
@@ -89,7 +92,6 @@ export default function ChatbotWidget() {
     const vv = window.visualViewport;
     const apply = () => {
       document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
-      // how much bottom area is obscured (keyboard height)
       const kbOffset = Math.max(
         0,
         window.innerHeight - (vv.height + vv.offsetTop)
@@ -118,7 +120,7 @@ export default function ChatbotWidget() {
 
     const onVv = () => {
       if (isNearBottom()) {
-        el.scrollTop = el.scrollHeight; // jump to prevent jank during animation
+        el.scrollTop = el.scrollHeight;
       }
     };
     vv.addEventListener("resize", onVv);
@@ -129,7 +131,7 @@ export default function ChatbotWidget() {
   const nearBottom = () => {
     const el = messagesWrapRef.current;
     if (!el) return true;
-    const threshold = 80; // px from bottom counts as "at bottom"
+    const threshold = 80;
     const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
     return distance <= threshold;
   };
@@ -144,30 +146,26 @@ export default function ChatbotWidget() {
     }
   };
 
-  // Track user scrolling to toggle autoscroll & pill visibility
   useEffect(() => {
     const el = messagesWrapRef.current;
     if (!el) return;
-
     const onScroll = () => {
       const atBottom = nearBottom();
       setAutoScroll(atBottom);
       if (atBottom) setShowNewMsgPill(false);
     };
-
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
   // ---------------- EFFECTS ----------------
-  // Smart autoscroll on new messages
   useEffect(() => {
     if (autoScroll) {
       scrollToBottom(true);
     } else {
       setShowNewMsgPill(true);
     }
-  }, [messages]); // run after each message append
+  }, [messages]);
 
   // Close on ESC
   useEffect(() => {
@@ -199,14 +197,14 @@ export default function ChatbotWidget() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, messages, isMobile]);
 
-  // Best-effort finalize on page unload
+  // Best-effort finalize on page unload (only if typed)
   useEffect(() => {
     const handler = () => {
       try {
+        if (!hasUserSpoken()) return;
         const payload = JSON.stringify({
           sessionId,
           finalize: true,
-          conversation: messages,
         });
         navigator.sendBeacon?.(
           "/api/chat",
@@ -218,9 +216,9 @@ export default function ChatbotWidget() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [messages, sessionId]);
 
-  // Auto-finalize after 60s inactivity while open
+  // Auto-finalize after 60s inactivity while open (only if typed)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !hasUserSpoken()) return;
     const t = setTimeout(() => finalizeLead(), 60_000);
     return () => clearTimeout(t);
   }, [messages, isOpen]);
@@ -256,7 +254,6 @@ export default function ChatbotWidget() {
     const text = input.trim();
     if (!text) return;
 
-    // preserve autoscroll state based on current position
     setAutoScroll(nearBottom());
 
     const next = [...messages, { role: "user", content: text }];
@@ -269,7 +266,6 @@ export default function ChatbotWidget() {
       const data = await postChat({
         sessionId,
         message: text,
-        conversation: next,
       });
       const reply = data.reply || "";
       setMessages([...next, { role: "assistant", content: reply }]);
@@ -288,11 +284,6 @@ export default function ChatbotWidget() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    sendMessage();
-  };
-
   const toggleOpen = async () => {
     if (isOpen) {
       await finalizeLead();
@@ -308,7 +299,6 @@ export default function ChatbotWidget() {
           },
         ]);
       }
-      // Only auto-focus on iOS; Android tends to raise keyboard before layout finishes
       setTimeout(() => {
         if (isIOS) inputRef.current?.focus();
       }, 0);
@@ -323,7 +313,6 @@ export default function ChatbotWidget() {
   // ---------------- UI ----------------
   return (
     <>
-      {/* Floating bubble — hidden when open to avoid overlap */}
       {!isOpen && (
         <div
           style={{
@@ -352,7 +341,6 @@ export default function ChatbotWidget() {
         </div>
       )}
 
-      {/* Chat widget */}
       {isOpen && (
         <div
           ref={widgetRef}
@@ -361,11 +349,9 @@ export default function ChatbotWidget() {
           aria-label="Website Builders America Chat"
           style={{
             position: "fixed",
-            // Anchor just above the keyboard on Android; normal offset on desktop
             bottom: isMobile ? "var(--vv-bottom, 0px)" : "1rem",
             right: isMobile ? 0 : "1rem",
             width: isMobile ? "100%" : "360px",
-            // Prefer visible viewport height (vvh) -> 100dvh -> --vh fallback
             height: isMobile
               ? "var(--vvh, min(100dvh, calc(var(--vh) * 100)))"
               : "520px",
@@ -385,7 +371,6 @@ export default function ChatbotWidget() {
             lineHeight: 1.5,
           }}
         >
-          {/* Header (also swipe area on mobile) */}
           <div
             ref={headerRef}
             style={{
@@ -418,7 +403,6 @@ export default function ChatbotWidget() {
             </button>
           </div>
 
-          {/* Messages */}
           <div
             ref={messagesWrapRef}
             style={{
@@ -427,9 +411,9 @@ export default function ChatbotWidget() {
               padding: "1rem",
               overflowY: "auto",
               background: "#fff",
-              WebkitOverflowScrolling: "touch", // iOS smooth scroll
-              scrollPaddingBottom: "80px", // keep last bubble visible above keyboard
-              overscrollBehavior: "contain", // reduces Android snap
+              WebkitOverflowScrolling: "touch",
+              scrollPaddingBottom: "80px",
+              overscrollBehavior: "contain",
             }}
           >
             {messages.map((m, i) => (
@@ -480,7 +464,6 @@ export default function ChatbotWidget() {
 
             <div ref={messagesEndRef} />
 
-            {/* "New message" pill */}
             {showNewMsgPill && (
               <button
                 onClick={() => {
@@ -509,7 +492,6 @@ export default function ChatbotWidget() {
             )}
           </div>
 
-          {/* Input bar — form submit works great on iOS/Android */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -521,7 +503,6 @@ export default function ChatbotWidget() {
               borderTop: "1px solid #e6e8eb",
               padding: "0.6rem",
               background: "#fafbfc",
-              // extra bottom inset for iPhone home indicator (0 on Android)
               paddingBottom: "calc(0.6rem + env(safe-area-inset-bottom))",
             }}
           >
@@ -538,16 +519,13 @@ export default function ChatbotWidget() {
               enterKeyHint="send"
               autoCapitalize="sentences"
               autoCorrect="on"
-              onFocus={() => {
-                // If they focus while already at bottom, keep autoscroll on
-                setAutoScroll(nearBottom());
-              }}
+              onFocus={() => setAutoScroll(nearBottom())}
               style={{
                 flex: 1,
                 padding: "0.65rem 0.75rem",
                 borderRadius: "10px",
                 border: "1px solid #d6dbe1",
-                fontSize: "16px", // prevents iOS zoom; fine on Android
+                fontSize: "16px",
                 outline: "none",
                 background: "#fff",
               }}

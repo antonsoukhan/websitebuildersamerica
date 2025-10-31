@@ -4,14 +4,6 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-// -------------------------
-// In-memory session store
-// sessions[sid] = {
-//   turns: [{ role: "user"|"assistant", content: string }],
-//   lastEmailHash: string,
-//   confirmationsSentTo: Set<string>   // customer emails already confirmed
-// }
-// -------------------------
 const sessions = Object.create(null);
 
 // --- Helpers ---
@@ -27,7 +19,6 @@ const phoneRegex =
 
 function extractContact(text) {
   const email = text.match(emailRegex)?.[0] || null;
-  // Trim stray trailing punctuation on phones like “612-839-0429.”
   const phone =
     text
       .match(phoneRegex)?.[0]
@@ -43,14 +34,13 @@ function appointmentConfirmed(text) {
 }
 
 function createTransport() {
-  // Reliable Gmail SMTP (requires App Password)
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
-      user: process.env.EMAIL_USER, // e.g. websitebuildersamerica@gmail.com
-      pass: process.env.EMAIL_PASS, // Gmail App Password (not your login)
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 }
@@ -112,24 +102,20 @@ Website Builders America
 
 export async function POST(req) {
   try {
-    const {
-      sessionId,
-      message,
-      conversation = [],
-      finalize = false,
-    } = await req.json();
+    const { sessionId, message, finalize = false } = await req.json();
     const sid = sessionId || "anon";
 
-    // Initialize session bucket
-    if (!sessions[sid]) {
+    // ✅ Only initialize a session when we actually get a user message
+    if (message && !sessions[sid]) {
       sessions[sid] = {
         turns: [],
         lastEmailHash: "",
         confirmationsSentTo: new Set(),
+        emailedOnFirstContact: false,
       };
     }
 
-    const MODEL = process.env.OPENAI_MODEL || "gpt-3.5-turbo"; // cheap default
+    const MODEL = process.env.OPENAI_MODEL || "gpt-3.5-turbo";
 
     const systemMessage = `
 You are a helpful assistant for Website Builders America (websitebuildersamerica.com).
@@ -138,10 +124,16 @@ Only say "you'll receive an email confirmation" if the user has provided an emai
 Be concise, friendly, and professional.
     `.trim();
 
-    // 1) Get assistant reply unless this is finalize-only
     let assistantReply = "";
+
+    // If finalize-only AND no session exists → nothing to do (avoid empty emails)
+    if (finalize && !sessions[sid]) {
+      return NextResponse.json({ reply: "" });
+    }
+
+    // If there's a real message, talk to OpenAI and append turns
     if (!finalize && typeof message === "string" && message.length) {
-      const serverContext = sessions[sid].turns.slice(-12); // keep token usage low
+      const serverContext = sessions[sid].turns.slice(-12);
       const openaiRes = await fetch(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -168,14 +160,19 @@ Be concise, friendly, and professional.
       } else {
         assistantReply = data?.choices?.[0]?.message?.content || "No response";
       }
+
+      sessions[sid].turns.push({ role: "user", content: message });
+      sessions[sid].turns.push({ role: "assistant", content: assistantReply });
     }
 
-    // 2) Append new turn(s) to server-side log
-    if (message) sessions[sid].turns.push({ role: "user", content: message });
-    if (assistantReply)
-      sessions[sid].turns.push({ role: "assistant", content: assistantReply });
+    // If we reach here with no session (e.g., finalize before any message), bail
+    if (!sessions[sid]) {
+      return NextResponse.json({ reply: assistantReply || "" });
+    }
 
-    // 3) Build FULL transcript from server storage
+    const hasUserTurn = sessions[sid].turns.some((t) => t.role === "user");
+
+    // Build transcript and signals
     const transcript = sessions[sid].turns
       .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
       .join("\n");
@@ -191,30 +188,37 @@ Be concise, friendly, and professional.
       email,
       phone,
       turns: sessions[sid].turns.length,
+      hasUserTurn,
     });
 
-    // 4) Decide when to email you (admin)
-    //    - First contact captured → "New Chatbot Lead Captured"
-    //    - Appointment confirmed (with contact) → "Chatbot Appointment Confirmed"
-    //    - Finalize (always) → "Chatbot Transcript (Finalized)"
+    // Decide admin email triggers
     let shouldEmailAdmin = false;
     let adminSubject = "New Chatbot Lead Captured";
 
+    // First time we capture *contact* → notify
     if (contactKey && !sessions[sid].emailedOnFirstContact) {
       shouldEmailAdmin = true;
       adminSubject = "New Chatbot Lead Captured";
       sessions[sid].emailedOnFirstContact = true;
     }
+
+    // Appointment confirmed with contact → notify
     if (!shouldEmailAdmin && confirmedNow && contactKey) {
       shouldEmailAdmin = true;
       adminSubject = "Chatbot Appointment Confirmed";
     }
-    if (!shouldEmailAdmin && finalize) {
+
+    // Finalize → ONLY if there was interaction or contact
+    if (
+      !shouldEmailAdmin &&
+      finalize &&
+      (hasUserTurn || contactKey || confirmedNow)
+    ) {
       shouldEmailAdmin = true;
       adminSubject = "Chatbot Transcript (Finalized)";
     }
 
-    // 5) Send admin transcript email (de-duped by transcript hash)
+    // Send admin email if needed (dedup by transcript hash)
     if (shouldEmailAdmin) {
       if (sessions[sid].lastEmailHash !== hash) {
         await sendAdminTranscriptEmail({
@@ -233,7 +237,7 @@ Be concise, friendly, and professional.
       console.log("[chat/email] admin not sent (no trigger met)");
     }
 
-    // 6) Send customer confirmation email once we have their email
+    // Customer confirmation (once per email)
     if (email && !sessions[sid].confirmationsSentTo.has(email)) {
       try {
         await sendCustomerConfirmationEmail(email);
@@ -243,7 +247,6 @@ Be concise, friendly, and professional.
       }
     }
 
-    // 7) Respond to client
     return NextResponse.json({ reply: assistantReply || "" });
   } catch (err) {
     console.error("[chat/error]", err);
